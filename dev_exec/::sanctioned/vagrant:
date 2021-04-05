@@ -1,0 +1,134 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([// Lvl 0
+
+// Run vagrant:config which will generate the Vagrantfile.rb
+// and other configuration.
+//
+// It prints a JSON with relative generated file paths.
+// Store it in "paths".
+Let ("paths", Exec (output: String, cmd: "xs", args: ["-f",
+    "dev_exec/vagrant:config"
+])),
+// Extract the Vagrantfile "dir" from "paths" with a simple
+// jq "$paths.dir".
+//
+// The too many options are to make jq input-output pure
+// text without new-lines.
+Let ("dir", Exec (output: String, cmd: "jq", args: [
+    "--null-input", "--raw-output", "--join-output",
+    "--argjson", "paths", (var: "paths"),
+    "$paths.dir"
+])),
+
+// We need to synthesize the script that runs the vagrant
+// command, because this is the only way to insert
+// variable/dynamic arguments.
+
+// Part 1 of the vagrant-runner script:
+Let ("vagrant.xs-part1",
+     Expr(
+r####"Script([// Lvl 2
+
+Exec (output: Display,
+    cmd: "vagrant",
+    env: { "VAGRANT_CWD": (var: "dir"),
+        "VAGRANT_VAGRANTFILE": "Vagrantfile.gen.rb",
+    },
+    args:"#### // break just before outputing "args"
+)),// let "vagrant.xs-part1"
+
+// Part 2 of the vagrant-runner script (nothing, just closing):
+Let ("vagrant.xs-part2",
+     Expr(
+r####" // continue off right after outputing "args"
+), // exec "vagrant" lvl 2
+
+])//Script lvl 2
+"####
+)),// let "vagrant.xs-part1"
+
+// The vagrant-runner generator script.
+//
+// This script will output in order
+// - vagrant-runner part 1
+// - args
+// - vagrant-runner part 2
+// thus outputing the complete vagrant-runner script.
+Let ("gen-vagrant.xs",
+     Expr(
+r####"Script([// Lvl 1
+
+Exec (output: Display,
+    cmd: "xs",
+    args: [
+        "-ah", "part1", (var: "part1"),
+        "-ah", "part2", (var: "part2"),
+        "-ah", "args", (var: "args"),
+        "-c",
+        r###"
+            Script([
+                WriteFile("/dev/stdout", (var: "part1")),
+                WriteFile("/dev/stdout", (var: "args")),
+                WriteFile("/dev/stdout", (var: "part2")),
+            ])
+        "###
+    ]
+),
+
+])//Script lvl 1
+"####
+)),// let "gen-vagrant.xs"
+
+
+// Transcode possibly YAML arguments into surely JSON
+Let ("args.json",
+    List([
+        Alias ("args.yaml",
+            Exec (output: Stream,
+                cmd: "xs",
+                args: [
+                    "-ah", "yaml_args", (var: "_"),
+                    "-c", r####"
+                        Script([
+                            WriteFile ("/dev/stdout", (var: "yaml_args")),
+                        ])
+                    "####
+                ],
+            )
+        ),
+        Exec (output: String,
+            cmd: "xc",
+            args: ["yj"],
+            stdin: Source("args.yaml"), cwd: Some("."),
+        ),
+    ])
+),
+//WriteFile ("/dev/stderr", (var: "args.json")),
+//Exec(output:Display,cmd:"jq",args:["-n","--argjson","args",(var: "args.json"),"$args"]),
+
+// Generate the vagrant-runner script and store it in
+// "vagrant.sh".
+//
+Let ("vagrant.xs",
+    Exec (output: String,
+        cmd: "xs",
+        args: ["-c", (var: "gen-vagrant.xs"),
+            "-ah", "part1", (var: "vagrant.xs-part1"),
+            "-ah", "part2", (var: "vagrant.xs-part2"),
+            "-ah", "args", (var: "args.json"),
+        ]
+    )
+),
+
+// We can finnaly run the vagrant-runner script,
+// which will actually run vagrant.
+Exec (output: Display,
+    cmd: "xs",
+    args: [
+        "-ah", "dir", (var: "dir"),
+        "-c", (var: "vagrant.xs")
+    ]
+),
+
+])//Script

@@ -1,0 +1,187 @@
+// vim: et ts=4 sw=4
+
+Packer (
+    variable: {
+        "HostName": (
+            type: "string",
+            description: "The ssh-host to connect to",
+            default: "",
+        ),
+        "Port": (
+            type: "string",
+            description: "The ssh-port to connect to",
+            default: "",
+        ),
+        "User": (
+            type: "string",
+            description: "The ssh-username to use when logging into the machine",
+            default: "",
+        ),
+        "IdentityFile": (
+            type: "string",
+            description: "The ssh-identity to use when logging into the machine",
+            default: "",
+        ),
+
+        "Root": (
+            description: "Absolute path to the root of the repository",
+            type: "string",
+        ),
+    },
+    source: (
+        null: {
+            "alpine": (
+                communicator: "ssh",
+                ssh_host: "${local.ssh_host}",
+                ssh_port: "${local.ssh_port}",
+                ssh_username: "${local.ssh_username}",
+                ssh_private_key_file: "${local.ssh_private_key_file}",
+            ),
+            "alpine-docker": (
+                communicator: "ssh",
+                ssh_host: "${local.ssh_host}",
+                ssh_port: "${local.ssh_port}",
+                ssh_username: "${local.ssh_username}",
+                ssh_private_key_file: "${local.ssh_private_key_file}",
+            ),
+            "alpine-rustup": (
+                communicator: "ssh",
+                ssh_host: "${local.ssh_host}",
+                ssh_port: "${local.ssh_port}",
+                ssh_username: "${local.ssh_username}",
+                ssh_private_key_file: "${local.ssh_private_key_file}",
+            ),
+            "docker.alpine": (
+                communicator: "ssh",
+                ssh_host: "${local.ssh_host}",
+                ssh_port: "${local.ssh_port}",
+                ssh_username: "${local.ssh_username}",
+                ssh_private_key_file: "${local.ssh_private_key_file}",
+            )
+        },
+        vagrant: {
+            "alpine-base": (
+                communicator: "ssh",
+                source_path: "generic/alpine38",
+                output_dir: "${local.root_prefix}/_.artifact/packer:alpine.base/box",
+                box_name: "gvz/alpine.base",
+            ),
+            "alpine-docker": (
+                communicator: "ssh",
+                output_dir: "${local.root_prefix}/_.artifact/packer:alpine.docker/box",
+                box_name: "gvz/alpine.docker",
+            ),
+            "alpine-rustup": (
+                communicator: "ssh",
+                source_path: "${var.RootAbsolute}/_.artifact/packer:alpine.base/box/package.box",
+                output_dir: "${local.root_prefix}/_.artifact/packer:alpine.rustup/box",
+                box_name: "gvz/alpine.rustup",
+            ),
+        }
+    ),
+
+    build: [
+        {
+            "name": "alpine.rustup",
+            "sources": [
+                "null.alpine-rustup",
+                "vagrant.alpine-rustup",
+            ],
+            "provisioner": {
+                "shell": [
+                    (scripts: [
+                        "${local.root_prefix}/component/shell/vm.alpine.rustup.install.sh",
+                    ]),
+                ],
+            },
+            "post-processor": {
+                "manifest": [
+                    (
+                        output: "${local.root_prefix}/_.artifact/packer:alpine.rustup/manifest.json",
+                    ),
+                ],
+            }
+        },
+
+        {
+            "name": "alpine.docker",
+            "sources": [
+                "null.alpine-docker",
+                "vagrant.alpine-docker",
+            ],
+            "provisioner": {
+                "shell": [
+                    (scripts: [
+                        "${local.root_prefix}/component/shell/vm.alpine.docker.install.sh",
+                    ]),
+                ],
+            },
+            "post-processor": {
+                "manifest": [
+                    (
+                        output: "${local.root_prefix}/_.artifact/packer:alpine.docker/manifest.json",
+                    ),
+                ],
+            }
+        },
+        {
+            "name": "alpine.base",
+            "sources": [
+                "null.alpine",
+                "vagrant.alpine-base",
+            ],
+            "provisioner": {
+                "shell": [
+                    (scripts: [
+                        "${local.root_prefix}/component/shell/vm.alpine.init.sh",
+                    ]),
+                ],
+            },
+            "post-processor": {
+                "manifest": [
+                    (
+                        output: "${local.root_prefix}/_.artifact/packer:alpine.base/manifest.json",
+                    ),
+                ],
+            }
+        },
+        (
+            name: "Papuea",
+            sources: [
+                "null.alpine",
+            ],
+            provisioner: {
+                "shell-local": [
+                    ( inline: [
+                      "pwd",
+                    ]),
+                ],
+                "shell": [
+                    ( inline: [
+                        "echo Miksa Aeternus\\!",
+                    ]),
+                    ( inline: [
+                        "echo Yellow, woarld.",
+                    ]),
+                    ( scripts: [
+                        "${local.root_prefix}/component/shell/vm.alpine.init.sh",
+                        "${local.root_prefix}/component/shell/vm.alpine.cargo.install.sh",
+                        "${local.root_prefix}/component/shell/noop.sh",
+                    ]),
+                    ( inline: [ r###"
+
+                    source $HOME/.profile
+                    env \
+                        CARGO_TARGET_DIR=_cargo_target \
+                    cargo install \
+                        --locked \
+                        --git 'https://github.com/Good-Vibez/ct' \
+                        --branch dev \
+                        xs
+
+                    "###]),
+                ],
+            },
+        ),
+    ],
+)

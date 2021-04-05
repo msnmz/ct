@@ -1,0 +1,61 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script ([
+
+Exec (
+    cmd: "touch", cwd: Some("dev_exec"),
+    args: [
+        (var: "name")
+    ],
+),
+
+Exec (
+    cmd: "chmod", cwd: Some("dev_exec"),
+    args: [
+        "0755",
+        (var: "name")
+    ],
+),
+
+Exec (
+    cmd: "xs", cwd: Some("dev_exec"),
+    args: [
+        "-ah", "name", (var: "name"),
+        "-c", r####"Script([
+
+    WriteFile ((var: "name"),
+r###"#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Let ("cwd",
+Exec (output: String,
+    cmd: "pwd",
+    cwd: Some("/"),
+)),
+
+Alias ("hello",
+Exec (output: Stream,
+    cmd: "echo",
+    args: ["hello", "world", "not from this place: !!!±/", (var: "cwd")]
+)),
+
+WriteFile ("/dev/stdout", (source: "hello")),
+
+])//Script
+"###
+    ), // WriteFile in lvl 2
+
+        ])//Script"#### // back to lvl 1
+    ],
+), // back to lvl 0
+
+Exec (
+    cmd: "git", cwd: Some("dev_exec"),
+    args: [
+        "add",
+        (var: "name")
+    ],
+),
+
+])//Script

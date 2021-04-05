@@ -1,0 +1,135 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+    Alias ("Clear xs error server terminal",
+        Exec (
+            cmd: "xs",
+            args: ["--error-server-clear"]
+        ),
+    ),
+
+    Alias ("Build cargo workspace",
+
+        // Normally it's this, but hack-around to restrict compile-error lines
+        //Exec (output: Display,
+        //   cmd: "xs",
+        //   args: ["-f", "dev_exec/build"],
+        //),
+        List([
+            Let ("cargo-run.xs.sh",
+
+                // TODO: create a cargo-max-lines wrapper
+
+                //HACK: this is a pure workaround to capture STDERR.
+                // it is relatively safe, because it needs to be piped
+                // through a cmd: "sh", which any linter will freak about.
+                Expr (
+                    r####"
+                        xs -c '
+                            Script([
+                                Exec (output: Display,
+                                    cmd: "cargo",
+                                    args: ["--color", "always", "test", "-p", "xs"],
+                                    cwd: Some("component/cargo"),
+                                    env: {
+                                        "RUST_BACKTRACE": "1",
+                                    }
+                                ),
+                            ])
+                        ' 2>&1
+                    "####
+                )
+            ),
+            Exec (output: Display,
+                cmd: "sh",
+                args: ["-c", (var: "cargo-run.xs.sh")],
+            ),
+        ])
+    ),
+
+    Alias ("Dev-loop meta::sanctioned",
+        Exec (output: Display,
+            cmd: "xs",
+            args: ["-f", "dev_exec/meta::sanctioned"],
+        ),
+    ),
+
+    Alias (r#"The "life" sequence"#,
+        Exec (output: Display,
+            cmd: "xs",
+            args: ["-f", "dev_exec/life"],
+        )
+    ),
+
+    Alias ("Update packer configuration"    , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:config"]                       , output: Display)),
+    Alias ("Validate packer configuration"  , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["validate"]]   , output: Display)),
+    Alias ("Inspect packer configuration"   , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["inspect"]]    , output: Display)),
+
+    Alias ("Update cargo-build-tag"         , Exec (cmd: "xs", args: ["-f", "dev_exec/cargo:update_buildtag"]               , output: Display)),
+
+    Alias ("Run the cargo-cache-dir query"  , Exec (cmd: "xs", args: ["-f", "dev_exec/config::cargo.toml.json?cache"]       , output: Display)),
+
+    Alias ("Check if sanctioned topics remain sanctioned",
+        List ([
+            Let ("topics", Expr ([
+                "vagrant",
+                "alloc",
+                "read",
+                "config",
+                "install",
+                "sudo",
+                "meta",
+                "packer",
+                "git",
+                "push",
+                //"cargo",
+            ])),
+            ForEach ("topics",
+                List ([
+                    Let ("is_topic_sanctioned:in.topic", Expr (Each)),
+
+                    //WriteFile ("/dev/stderr", "+++ SANCTIONED "),
+                    //WriteFile ("/dev/stderr", (var: "is_topic_sanctioned:in.topic")),
+
+                    Exec (output: Display,
+                        cmd: "xs",
+                        args: [
+                            "-f", "dev_exec/meta:test_is_topic_sanctioned",
+                            "-ah", "topic", (var: "is_topic_sanctioned:in.topic"),
+                        ],
+                    ),
+                ])
+            ),
+        ])
+    ),
+
+    Alias ("Run a random translation with DeepL.com",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/translate",
+                "-ah", "sentence", "Bob the sponge goes on vacation tomorrow morning 8 am.",
+            ],
+        )
+    ),
+
+    AliasStmt ("Clear xs error server terminal"),
+    AliasStmt ("Build cargo workspace"),
+
+    //AliasStmt ("Dev-loop meta::sanctioned"),
+
+    //AliasStmt (r#"The "life" sequence"#),
+
+    //AliasStmt ("Update packer configuration"),
+    //AliasStmt ("Validate packer configuration"),
+    //AliasStmt ("Inspect packer configuration"),
+
+    //AliasStmt ("Update cargo-build-tag"),
+
+    AliasStmt ("Run the cargo-cache-dir query"),
+
+    AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
+
+    //AliasStmt ("Run a random translation with DeepL.com"),
+])//Script

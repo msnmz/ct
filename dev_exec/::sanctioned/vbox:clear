@@ -1,0 +1,31 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script ([
+
+    Let ("vbox_vms",
+        Exec (
+            cmd: "VBoxManage",
+            args: ["list", "vms", "--sorted"],
+            output: VBoxVms,
+        ),
+    ),
+
+    Let ("vbox_vms0",Clone("vbox_vms")),
+
+    ForEach ("vbox_vms",
+        Exec (
+            cmd: "VBoxManage",
+            args: ["controlvm", Each, "poweroff"],
+            allow_failure: true,
+        )
+    ),
+
+    ForEach ("vbox_vms0",
+        Exec (
+            cmd: "VBoxManage",
+            args: ["unregistervm", Each, "--delete"],
+        )
+    ),
+
+])

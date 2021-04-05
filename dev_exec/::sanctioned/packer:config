@@ -1,0 +1,79 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+//
+// Load effective packer configuration
+//
+Let ("config",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/config::packer"
+        ]
+    )
+),
+
+//
+// Extract selectors from configuration
+//
+// `extract:in.slct`    :: name of selectable (see packer:build.pkr.json#L7)
+//
+Alias ("extract",
+    Exec (output: String,
+        cmd: "jq",
+        args: [
+            "--null-input", "--raw-output", "--join-output",
+            "--argjson", "config", (var: "config"),
+            "--arg", "name", (var: "extract:in.slct"),
+            r####"
+                $config
+                | map(select(.[0] == "selections")[1])[]
+                | map(select(.[0] == $name)[1])[]
+            "####
+        ],
+    )
+),
+
+Let ("extract:in.slct", Expr("source")),
+Let ("q-source", AliasStmt("extract")),
+
+Let ("extract:in.slct", Expr("recipe")),
+Let ("q-recipe", AliasStmt("extract")),
+
+Let ("extract:in.slct", Expr("postproc")),
+Let ("q-postproc", AliasStmt("extract")),
+
+//Alias("dbg",Exec(cmd:"jq",args:["-neC","--arg","o",(var:"q-postproc"),"$o"],output:Stream)),
+//WriteFile("/dev/stderr",(source:"dbg")),
+
+//
+// Generate build.pkr.json
+//
+Let ("packer:build.pkr.json",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/packer:build.pkr.json",
+            "-ah", "select.source.jq", (var: "q-source"),
+            "-ah", "select.recipe.jq", (var: "q-recipe"),
+            "-ah", "select.postproc.jq", (var: "q-postproc"),
+        ],
+    )
+),
+
+//
+// Store build.pkr.json
+//
+Exec (output: Display,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/::alloc",
+        "-ah", "ns", "cache",
+        "-ah", "itemns", "packer",
+        "-ah", "item", "build.pkr.json",
+        "-ah", "art", (var: "packer:build.pkr.json"),
+    ],
+)
+
+])//Script

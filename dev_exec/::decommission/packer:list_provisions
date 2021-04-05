@@ -1,0 +1,51 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Let (
+    "build.json",
+    Exec (output: String, cwd: Some("."),
+        cmd: "xc", stdin: File("component/packer/build.pkr.ron"),
+    )
+),
+
+Exec (output: Display,
+    cmd: "jq",
+    args: [
+        "-n",
+        "--argjson", "build", (var: "build.json"),
+
+        r###"
+
+    def merge_add:.
+    | map(to_entries[])
+    | reduce .[] as $entry ({};
+      .[$entry.key] |= [. // [] | .[], "# <--- Merge --->", $entry.value[]]
+    )
+    ;
+
+    $build.build
+
+    # Iterating over named builds.
+    #
+    # Only keeping .provisioner
+    #
+    | map({ key: .name, value: .provisioner })
+
+    # Iterating over provisioner types ("shell-local").
+    #
+    # Each provisioner is an array of objects. (Instances)
+    #
+    | map(.value |= (.
+        | to_entries
+        | map(.value |= merge_add) # .value == provisioner_body
+            # provisioner_body is an array of objects. We merge them into
+            # one that is an object of one (flattened) array.
+        | from_entries
+      ))
+    | from_entries
+        "###
+    ],
+),
+
+])//Script

@@ -1,0 +1,104 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+    WriteFile("component/cargo/xr/src/lib/lib/version.rs",
+        r####"
+pub const BUILD_ID: &str = "";
+        "####
+    ),
+
+    Alias ("diff-head",
+        Exec (output: Stream,
+            cmd: "git",
+            args: ["diff-tree", "-p", "HEAD"],
+        )
+    ),
+
+    Let ("diff-head-id",
+        Exec (output: String,
+            cmd: "git",
+            args: ["patch-id", "--stable"],
+            stdin: Source("diff-head"),
+            cwd: Some("."),
+        )
+    ),
+
+
+    Alias ("diff-index",
+        Exec (output: Stream,
+            cmd: "git",
+            args: ["diff-files", "-p"],
+        )
+    ),
+
+    Let ("diff-index-id",
+        Exec (output: String,
+            cmd: "git",
+            args: ["patch-id", "--stable"],
+            stdin: Source("diff-index"),
+            cwd: Some("."),
+        )
+    ),
+
+    Alias ("ids",
+        Exec (output: Stream,
+            cmd: "xs",
+            args: [
+                "-ah", "0", (var: "diff-head-id"),
+                "-ah", "1", (var: "diff-index-id"),
+                "-c",
+                    r####"
+                        Script([
+                            WriteFile("/dev/stdout", (var: "0")),
+                            WriteFile("/dev/stdout", (var: "1")),
+                        ])
+                    "####
+            ],
+        ),
+    ),
+    //WriteFile("/dev/stderr", (source: "ids")),
+
+    Let ("buildid-nl",
+        Exec (output: String,
+            cmd: "openssl",
+            args: ["sha512"],
+            stdin: Source("ids"),
+            cwd: Some("."),
+        ),
+    ),
+    //WriteFile("/dev/stderr", (var: "buildid")),
+    Let ("buildid",
+        Exec (output: String,
+            cmd: "jq",
+            args: [
+                "--join-output", "--raw-output", "--compact-output",
+                "--null-input", "--exit-status",
+                "--arg", "id", (var: "buildid-nl"),
+
+                r####"
+                    $id | ltrimstr("\n")
+                "####,
+            ],
+        ),
+    ),
+
+    Let ("xr-version.rs",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "buildid", (var: "buildid"),
+                "-c",
+                    r####"
+                        Script([
+                            WriteFile("/dev/stdout", r###"pub const BUILD_ID: &str = ""###),
+                            WriteFile("/dev/stdout", (var: "buildid")),
+                            WriteFile("/dev/stdout", r###"";"###),
+                        ])
+                    "####
+            ],
+        )
+    ),
+    //WriteFile("/dev/stderr", (var: "xr-version.rs")),
+    WriteFile("component/cargo/xr/src/lib/lib/version.rs", (var: "xr-version.rs")),
+])//Script

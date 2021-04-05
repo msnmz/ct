@@ -1,0 +1,248 @@
+Database (
+
+    //
+    // Entities
+    //
+
+    BoxOs: {
+        "alpine": (
+            vagrant_vbox: (box: "generic/alpine38"),
+            vagrant_docker: (image: "alpine:38"),
+        ),
+        "ubuntu": (
+            vagrant_vbox: (box: "ubuntu/focal64"),
+            vagrant_docker: (image: "ubuntu:20.04"),
+        ),
+        "arch": (
+            vagrant_vbox: (box: "generic/arch"),
+        ),
+    },
+
+    BoxSize: {
+        "x-small": (
+            vagrant_vbox: (memory: 512, cpus:  1),
+        ),
+        "medium": (
+            vagrant_vbox: (memory: 4096, cpus:  4),
+        ),
+        "large": (
+            vagrant_vbox: (memory: 8192, cpus:  8),
+        ),
+    },
+
+    BoxRole: {
+        "consul": (
+        ),
+    },
+
+    BoxNetworkAllocation: {
+        "alloc-1": (
+            port_range: (9000, 9001),
+        ),
+        "alloc-2": (
+            port_range: (9002, 9003),
+        ),
+        "alloc-3": (
+            port_range: (9004, 9005),
+        ),
+        "alloc-4": (
+            port_range: (9006, 9007),
+        ),
+        "alloc-5": (
+            port_range: (9008, 9009),
+        ),
+        "alloc-6": (
+            port_range: (9010, 9011),
+        ),
+        "alloc-7": (
+            port_range: (9012, 9013),
+        ),
+        "alloc-8": (
+            port_range: (9014, 9015),
+        ),
+        "alloc-9": (
+            port_range: (9016, 9017),
+        ),
+        "alloc-10": (
+            port_range: (9018, 9019),
+        ),
+        "alloc-11": (
+            port_range: (9020, 9021),
+        ),
+        "alloc-12": (
+            port_range: (9022, 9023),
+        ),
+        "alloc-13": (
+            port_range: (9024, 9025),
+        ),
+        "alloc-14": (
+            port_range: (9026, 9027),
+        ),
+        "alloc-15": (
+            port_range: (9028, 9029),
+        ),
+        "alloc-16": (
+            port_range: (9030, 9031),
+        ),
+        "alloc-17": (
+            port_range: (9031, 9032),
+        ),
+    },
+
+    //
+    // Relations
+    //
+
+    box_instance: {
+        "vm.alpine": (
+            os: "alpine",
+            size: "medium",
+            network_allocation: "alloc-1",
+            roles: [
+                "0/consul_server/0",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "vm.ubuntu": (
+            os: "ubuntu",
+            size: "medium",
+            network_allocation: "alloc-2",
+            roles: [
+                "0/consul_server/1",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "docker.alpine": (
+            os: "alpine",
+            //size: "medium",
+            network_allocation: "alloc-3",
+            roles: [
+                "0/consul_agent/0",
+            ],
+            provider: "vagrant_docker",
+        ),
+        "vm.arch": (
+            os: "arch",
+            network_allocation: "alloc-4",
+            roles: [
+                "0/consul_agent/1",
+            ],
+            provider: "vagrant_vbox"
+        ),
+        "vm.alpine0": (
+            os: "alpine",
+            size: "medium",
+            network_allocation: "alloc-13",
+            roles: [
+                "0/consul_agent/8",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "vm.alpine1": (
+            os: "alpine",
+            size: "medium",
+            network_allocation: "alloc-14",
+            roles: [
+                "0/consul_agent/9",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "vm.alpine2": (
+            os: "alpine",
+            size: "medium",
+            network_allocation: "alloc-5",
+            roles: [
+                "0/consul_server/2",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "vm.ubuntu2": (
+            os: "ubuntu",
+            size: "medium",
+            network_allocation: "alloc-6",
+            roles: [
+                "0/consul_server/3",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "docker.alpine2": (
+            os: "alpine",
+            //size: "medium",
+            network_allocation: "alloc-7",
+            roles: [
+                "0/consul_agent/2",
+            ],
+            provider: "vagrant_docker",
+        ),
+        "vm.arch2": (
+            os: "arch",
+            network_allocation: "alloc-8",
+            roles: [
+                "0/consul_agent/3",
+            ],
+            provider: "vagrant_vbox"
+        ),
+        "vm.alpine3": (
+            os: "alpine",
+            size: "medium",
+            network_allocation: "alloc-9",
+            roles: [
+                "0/consul_agent/4",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "vm.ubuntu3": (
+            os: "ubuntu",
+            size: "medium",
+            network_allocation: "alloc-10",
+            roles: [
+                "0/consul_agent/5",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "docker.alpine3": (
+            os: "alpine",
+            //size: "medium",
+            network_allocation: "alloc-11",
+            roles: [
+                "0/consul_agent/6",
+            ],
+            provider: "vagrant_docker",
+        ),
+        "vm.arch3": (
+            os: "arch",
+            network_allocation: "alloc-12",
+            roles: [
+                "0/consul_agent/7",
+            ],
+            provider: "vagrant_vbox"
+        ),
+        "vm.alpine4": (
+            os: "alpine",
+            size: "large",
+            network_allocation: "alloc-15",
+            roles: [
+                "0/consul_agent/10",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "vm.alpine5": (
+            os: "alpine",
+            size: "medium",
+            network_allocation: "alloc-16",
+            roles: [
+                "0/consul_agent/11",
+            ],
+            provider: "vagrant_vbox",
+        ),
+        "vm.ubuntu0": (
+            os: "ubuntu",
+            size: "medium",
+            network_allocation: "alloc-17",
+            roles: [
+                "0/consul_agent/12",
+            ],
+            provider: "vagrant_vbox",
+        ),
+    },
+)

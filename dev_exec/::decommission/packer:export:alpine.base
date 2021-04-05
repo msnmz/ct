@@ -1,0 +1,69 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script ([
+
+    Let ("root",
+         Exec (
+            cmd: "git", output: String,
+            args: [
+                "rev-parse", "--show-toplevel",
+            ],
+        )
+    ),
+
+    // TODO built-in
+    Let ("sum",
+        Exec (
+            cwd: Some("."),
+            cmd: "openssl", output: String,
+            stdin: File(".artifact/packer:alpine.base/box/package.box"),
+            args: ["sha256"],
+        ),
+    ),
+
+
+    Let ("gvz/alpine.base",
+        Exec (
+            cmd: "jq", output: String,
+            args: [
+                "-n",
+                "--arg", "root", (var: "root"),
+                "--arg", "sum", (var: "sum"),
+                r###"
+
+    ($root | rtrimstr("\n")) as $root |
+    ($sum | rtrimstr("\n")) as $sum |
+
+    {
+        description: "The base alpine image",
+        name: "gvz/alpine.base",
+        short_description: ("The base alpine image.\n\n" +
+            "Is apk updated and contains the basic packages."),
+        versions: [
+            {
+                description_html: "<p>The basic alpine image, with dev-packages and apk update.</p>",
+                description_markdown: "The basic alpine image, with dev-packages and apk update.",
+                providers: [
+                    {
+                        name: "virtualbox",
+                        url: ("file://" + $root + "/.artifact/packer:alpine.base/box/package.box"),
+                        checksum: $sum,
+                        checksum_type: "sha256",
+                    }
+                ],
+                status: "active",
+                version: "0.0.1",
+            }
+        ],
+    }
+                "###,
+            ], // args
+        ) // Exec
+    ), // Let
+
+    WriteFile (".artifact/packer:alpine.base/gvz-alpine_base.json",
+        (var: "gvz/alpine.base"),
+    ),
+
+])

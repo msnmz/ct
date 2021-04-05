@@ -1,0 +1,12 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script ([
+
+    Exec (
+        cwd: Some("./component/cargo"),
+        cmd: "rustup",
+        args: ["run", "nightly", "cargo", "fmt", "--all"]
+    ),
+
+])

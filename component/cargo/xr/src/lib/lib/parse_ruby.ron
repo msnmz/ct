@@ -1,0 +1,83 @@
+GrammarTable ({
+    "Program": List([
+        "magic_frozen_string_opt",
+            "nl",
+            "stmt_require", "nl",
+            "stmt_require", "nl",
+            "nl",
+            "comment_block",
+            "stmt_require", "nl",
+            "nl",
+            "stmt_require", "nl",
+            "nl",
+
+            "comment_block",
+
+            "if",
+            "<space>",
+                "stmt_defined", "nl",
+            "<space>",
+                "stmt_require", "nl",
+                "nl",
+            "<space>",
+                "stmt_require", "<space>",
+                "if",
+                "<space>",
+                    "stmt_defined", "nl",
+            "end", "nl",
+            "nl",
+
+            "stmt_require", "<space>", "if",
+            "<space>",
+                "ident", "?", "(", "ident", "::", "ident", ")", "nl",
+
+            "ident", "<space>", "string_quote", "<space>", "if",
+            "<space>",
+                "stmt_defined", "nl",
+            "stmt_require", "<space>", "if",
+            "<space>",
+                "stmt_defined", "nl",
+            "stmt_require", "<space>", "if",
+            "<space>",
+                "stmt_defined", "nl",
+            "stmt_require",
+
+            "any20",
+    ]),
+
+    "<nl>": Token (Exact (['\n'])),
+    "'": Token (Exact ('\'')),
+    "#": Token (Exact ('#')),
+    "(": Token (Exact ("(")),
+    ")": Token (Exact (")")),
+    "?": Token (Exact ("?")),
+    "::": Token (Exact ([':', ':'])),
+    "if": Token (Exact ("if")),
+    "end": Token (Exact ("end")),
+
+    "magic_frozen_string": Token (Exact ("# frozen_string_literal: true")),
+    "magic_frozen_string_opt": Any ("magic_frozen_string"),
+
+    "<space>": Token (Class (Prop (is_ascii_whitespace))),
+    "\\'": Token (Class (Not (Eq ('\'')))),
+    "\\<nl>": Token (Class (Not (Eq ('\n')))),
+
+    "ident": Token (Class (
+        Either ([
+            All ([
+                 Lt(1),
+                 Prop (is_alphabetic) ]),
+            Prop (is_alphanumeric)
+        ])
+    )),
+
+    "any20": Token (Class (Lt (20))),
+
+    "string_quote": List(["'", "\\'", "'"]),
+
+    "comment_block": List(["#", "\\<nl>", "nl"]),
+    "comment_line": Any("comment_block"),
+
+    "stmt_require": List(["ident", "<space>", "string_quote"]),
+    "stmt_defined?": List(["ident", "?", "(", "ident", ")"]),
+})

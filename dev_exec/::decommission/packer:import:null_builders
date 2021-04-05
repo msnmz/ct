@@ -1,0 +1,59 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Alias ("ssh-config",
+Exec (output: Stream,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/::read",
+        "-ah", "ns", "art",
+        "-ah", "itemns", "vagrant:null_builders",
+        "-ah", "item", "ssh_config",
+    ]
+)),
+
+Let ("ssh-config.json",
+Exec (output: String, cwd: Some("."),
+    cmd: "xc", args: ["hj"],
+    stdin: Source("ssh-config"),
+)),
+
+Let ("null.ssh-config.json",
+Exec (output: String,
+    cmd: "jq",
+    args: ["-n", "--argjson", "ssh", (var: "ssh-config.json"), r#"
+        $ssh
+        | map(. as [$host, $entries]
+        |   $entries
+        |   map(. as [$name, $values] |{
+                key: $name,
+                value: ($values | join("/"))
+        |.  })
+        |   from_entries
+        |   {
+              key: $host,
+              value: {
+                HostName,
+                User,
+                Port,
+                IdentityFile,
+              }
+            }
+        |.)
+        | from_entries
+    "#],
+)),
+
+Alias ("cache",
+Exec (output: Stream,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/cache::alloc.packer:source:null.ssh_config",
+        "-ah", "art", (var: "null.ssh-config.json")
+    ],
+)),
+
+WriteFile ("/dev/stdout", (source: "cache")),
+
+])//Script

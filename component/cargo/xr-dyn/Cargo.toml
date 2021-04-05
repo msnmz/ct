@@ -1,0 +1,31 @@
+[package]
+name = 'xr-dyn'
+version = '0.0.1'
+edition = '2018'
+[dependencies.ron]
+version = '0.6.4'
+optional = true
+
+[dependencies.serde]
+version = '1.0'
+features = ['derive']
+optional = true
+
+[dependencies.wind_std_list]
+git = 'https://gitlab.com/gvz/rs'
+package = 'wind_std_list'
+branch = 'main'
+
+[dependencies.xr-parse]
+version = '0.0.1'
+path = '../xr-parse'
+
+[dependencies.xr-token]
+version = '0.0.1'
+path = '../xr-token'
+
+[features]
+default = [
+    'ron',
+    'serde',
+]

@@ -1,0 +1,25 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script([
+
+Let (".cargo/config.json",
+Exec (output: String,
+    stdin: File("config.toml"),
+    cmd: "xc", cwd: Some(".cargo"),
+    args: ["mj"],
+)),
+
+Alias ("jq",
+Exec (output: Stream,
+    cmd: "jq",
+    args: [
+        "-nC",
+        "--argjson", "conf", (var: ".cargo/config.json"),
+        (var: "$named.query"),
+    ]
+)),
+
+WriteFile ("/dev/stdout", (source: "jq")),
+
+])//Script

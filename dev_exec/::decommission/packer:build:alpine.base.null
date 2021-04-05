@@ -1,0 +1,34 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script ([
+
+Let ("cache_dir", Exec (output: String,
+    cmd: "xs",
+    args: ["-f", "dev_exec/cache::read.packer:build"]
+)),
+
+Let ("var_project_root", Exec (output: String,
+    cmd: "xs",
+    args: ["-f", "dev_exec/cache::read.packer:var.project_root"]
+)),
+
+Let ("var_ssh.json", Exec (output: String,
+    cmd: "xs",
+    args: ["-f", "dev_exec/cache::read.packer:source:null.ssh_config"]
+)),
+
+Alias ("out",
+Exec (output: Stream,
+    cmd: "packer",
+    args: [
+        "build",
+        "-only", "alpine.base.null.alpine",
+        "-var-file", (var: "var_project_root"),
+        "-var-file", (var: "var_ssh.json"),
+        (var: "cache_dir")
+    ],
+)),
+
+WriteFile ("/dev/stdout", (source: "out")),
+
+])//Script

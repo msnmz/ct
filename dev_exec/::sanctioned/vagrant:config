@@ -1,0 +1,33 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Let ("Vagrantfile.rb", Exec (output: String, cmd: "xs", args: ["-f",
+    "dev_exec/config::vagrant:Vagrantfile.rb"
+])),
+
+Exec (
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/::alloc",
+        "-ah", "ns", "cache",
+        "-ah", "itemns", "vagrant",
+        "-ah", "item", "Vagrantfile.gen.rb",
+        "-ah", "art", (var: "Vagrantfile.rb"),
+    ],
+),
+
+Alias ("paths", Exec (output: Stream,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/::alloc:paths",
+        "-ah", "query", ".",
+        "-ah", "ns", "cache",
+        "-ah", "itemns", "vagrant",
+        "-ah", "item", "Vagrantfile.gen.rb",
+    ],
+)),
+
+WriteFile ("/dev/stdout", (source: "paths")),
+
+])//Script

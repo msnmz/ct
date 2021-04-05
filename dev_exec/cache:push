@@ -1,0 +1,49 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script ([
+
+    Alias ("tar",
+        Exec (
+            cmd: "tar", output: Stream,
+            args: [
+                "--create",
+                ".cache"
+            ],
+        ),
+    ),
+
+    Alias ("tee",
+        Exec (
+            cmd: "tee", output: Stream,
+            args: ["_.artifact/cache/_local_cache.tar"],
+            stdin: Source("tar"), cwd: Some("."),
+        ),
+    ),
+
+    Alias ("pv",
+        Exec (
+            cmd: "pv", output: Stream,
+            stdin: Source("tee"), cwd: Some("."),
+        ),
+    ),
+
+    Alias ("gzip",
+        Exec (
+            cmd:
+                // "gzip"
+                "cat"
+            ,
+            output: Stream,
+            stdin: Source("pv"), cwd: Some("."),
+        ),
+    ),
+
+    Exec (cmd: "mkdir", args: ["-p", "_.artifact/cache"]),
+    WriteFile (
+        // "_.artifact/cache/_local_cache.tgz"
+        "_.artifact/cache/_local_cache.tar"
+        ,
+        (source: "gzip"),
+    ),
+
+])//Script

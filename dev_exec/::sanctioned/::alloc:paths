@@ -1,0 +1,85 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Alias ("dirs",
+Exec (output: Stream,
+    cmd: "jq",
+    args: [
+        "--exit-status",
+        "--null-input",
+        "--raw-output", "--join-output",
+        "--arg", "ns", (var: "ns"),
+        "--arg", "itemns", (var: "itemns"),
+        "--arg", "item", (var: "item"),
+        r####"
+
+    def rs: "\u001b[m";
+    def col: "\u001b[38;5;\(.)m";
+    def col1: 192 | col;
+    def col_sep: 242 | col;
+    def col_ns: 215 | col;
+    def col_op: 164 | col;
+    def col_alloc: 159 | col;
+    def col_dot: 90 | col;
+    def col_itemns: 77 | col;
+    def col_item: 212 | col;
+    def col_bold: "\u001b[1;m";
+
+    (
+    # "\(col1)dev_exec\(rs)" +
+    "\(col_sep)//\(rs)" +
+    "\(col_ns)\($ns)\(rs)" +
+    "\(col_op)::\(rs)" +
+    "\(col_alloc)alloc\(rs)" +
+    "\(col_dot).\(rs)" +
+    "\(col_itemns)\($itemns)\(rs)" +
+    "\(col_dot).\(rs)" +
+    "\(col_item)\($item)\(rs)" +
+    "")
+    as $banner |
+
+    (
+    "\($ns)::alloc.\($itemns).\($item)"
+    )
+    as $banner_no_colour |
+
+    (
+    if $ns == "art" then
+      "_.artifact/\($itemns)"
+    else
+      if $ns == "cache" then
+        ".cache/\($itemns)"
+      else
+        ("Unknown ns: \($ns)" | halt_error(1))
+      end
+    end
+    )
+    as $dir |
+
+    "\($dir)/\($item)" as $filepath |
+
+    {
+        $banner,
+        $banner_no_colour,
+        $dir,
+        $filepath,
+    }
+        "####,
+    ],
+)),
+
+Alias ("output",
+Exec (output: Stream, cwd: Some("."),
+    cmd: "jq", stdin: Source("dirs"),
+    args: [
+        "--exit-status",
+        "--raw-output", "--join-output",
+        "--compact-output",
+        (var: "query"),
+    ],
+)),
+
+WriteFile ("/dev/stdout", (source: "output")),
+
+])//Script

@@ -1,0 +1,17 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Exec (output: Display,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/std::to_json",
+        "-ah", "val", [
+            //"vm.ubuntu0",
+            "vm.alpine4",
+            //"docker.alpine",
+        ],
+    ],
+),
+
+])//Script

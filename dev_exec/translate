@@ -1,0 +1,75 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+    Let ("request",
+        Exec (output: String,
+            cmd: "jq",
+            args: [
+                "--null-input",
+                "--arg", "sentence", (var: "sentence"),
+                r####"
+                    {
+                      "jsonrpc": "2.0",
+                      "method": "LMT_handle_jobs",
+                      "params": {
+                        "jobs": [
+                          {
+                            "kind": "default",
+                            "raw_en_sentence": $sentence,
+                            "raw_en_context_before": [],
+                            "raw_en_context_after": [],
+                            "preferred_num_beams": 4,
+                            "qu ality": "fast"
+                          }
+                        ],
+                        "lang": {
+                          "user_preferred_langs": [
+                            "EN",
+                            "DE",
+                            "NL"
+                          ],
+                          "source_lang_user_selected": "auto",
+                          "target_lang": "EN"
+                        },
+                        "priority": -1,
+                        "commonJobParams": {
+                          "regionalVariant": "en-US",
+                          "formality": null
+                        },
+                        "timestamp": 1617614647312
+                      },
+                      "id": 65650014
+                    }
+                "####,
+            ],
+        )
+    ),
+
+    Alias ("response",
+        Exec (output: Stream,
+            cmd: "curl",
+            args: [
+                "https://www2.deepl.com/jsonrpc",
+                "-H", "authority: www2.deepl.com",
+                "-H", "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36 Edg/89.0.774.68",
+                "-H", "content-type: application/json",
+                "-H", "accept: */*",
+                "-H", "origin: https://www.deepl.com",
+                "-H", "sec-fetch-site: same-site",
+                "-H", "sec-fetch-mode: cors",
+                "-H", "sec-fetch-dest: empty",
+                "-H", "referer: https://www.deepl.com/",
+                "-H", "accept-language: en-US,en;q=0.9,fr;q=0.8,ca;q=0.7",
+                "-H", "cookie: LMTBID=v2^|5afae79d-36f1-4d1f-ba70-584b4ae5e178^|08970fce054cb2b6a3e1e17a37e9947d; privacySettings=^%^7B^%^22v^%^22^%^3A^%^221^%^22^%^2C^%^22t^%^22^%^3A1617321600^%^2C^%^22m^%^22^%^3A^%^22STRICT^%^22^%^2C^%^22consent^%^22^%^3A^%^5B^%^22NECESSARY^%^22^%^5D^%^7D; __cfduid=d07575c8483b4ab75e8306bf17b427f0e1617614588; dapSid=^%^7B^%^22sid^%^22^%^3A^%^226fe1fa0c-a0b9-4887-adfc-04072650e508^%^22^%^2C^%^22lastUpdate^%^22^%^3A1617614647^%^7D",
+                "--compressed",
+                "--data-raw", (var: "request"),
+            ]
+        )
+    ),
+
+    Exec (output: Display,
+        cmd: "jq",
+        stdin: Source("response"), cwd: Some("."),
+        args: [r#".result.translations[].beams[].postprocessed_sentence"#],
+    ),
+])//Script

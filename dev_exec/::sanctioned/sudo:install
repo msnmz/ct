@@ -1,0 +1,17 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script([
+
+    Exec (
+        cmd: "sudo",
+        args: [
+            "cp", "-av",
+            ".cache/cargo/release/xs",
+            ".cache/cargo/release/xc",
+            ".cache/cargo/release/xr",
+            "/usr/local/bin",
+        ],
+    ),
+
+])

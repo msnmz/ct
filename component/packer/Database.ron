@@ -1,0 +1,74 @@
+(
+    source: (
+        vagrant: {
+            "alpine-base": (
+                box_os: "alpine", // get from vagrant
+                box_name: "gvz/alpine.base",
+            ),
+            "ubuntu-base": (
+                box_os: "ubuntu",
+                box_name: "gvz/ubuntu.base",
+            ),
+            "alpine-rustup": (
+                source_path: "${var.LocalVagrantArtifacts}/gvz/alpine.base",
+                box_name: "gvz/alpine.rustup",
+            ),
+        },
+        null: {
+            "alpine": ( source_vm: "vm.alpine" ), // default
+            "ubuntu": (),
+            "arch": (),
+            "alpine-0": ( source_vm: "vm.alpine0" ),
+            "ubuntu-0": ( source_vm: "vm.ubuntu0" ),
+            "arch-0": ( source_vm: "vm.arch" ),
+            "alpine-1": ( source_vm: "vm.alpine2" ),
+            "ubuntu-1": ( source_vm: "vm.ubuntu" ),
+            "arch-1": ( source_vm: "vm.arch" ),
+            "alpine-2": ( source_vm: "vm.alpine3" ),
+            "ubuntu-2": ( source_vm: "vm.ubuntu" ),
+            "arch-2": ( source_vm: "vm.arch" ),
+            "alpine-3": ( source_vm: "vm.alpine4" ),
+            "alpine-4": ( source_vm: "vm.alpine5" ),
+        }
+    ),
+    recipe:
+        {
+            "alpine.base": [
+                "vm.alpine.init",
+            ],
+            "boot_build.alpine": [
+                "boot_build.alpine",
+            ]
+        },
+
+    variable:
+        {
+            "ssh::HostName": (
+                type: "string",
+                description: "The ssh-host to connect to",
+            ),
+            "ssh::Port": (
+                type: "string",
+                description: "The ssh-port to connect to",
+            ),
+            "ssh::User": (
+                type: "string",
+                description: "The ssh-username to use when logging into the machine",
+            ),
+            "ssh::IdentityFile": (
+                type: "string",
+                description: "The ssh-identity to use when logging into the machine",
+            ),
+
+            "path::Root": (
+                type: "string",
+                description: "Absolute path to the root of the repository",
+            ),
+        },
+
+    build:
+        {
+            "alpine.base": (
+            ),
+        }
+)

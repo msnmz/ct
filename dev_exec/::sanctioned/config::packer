@@ -1,0 +1,37 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+WriteValue ("/dev/stdout",
+[
+    ["selections", [
+        [
+            "source",
+
+            r##"
+                .
+                |   ."null" |= {
+                        "alpine-3",
+                    }
+                |   { "null" }
+            "##
+        ],
+
+        [
+            "recipe",
+
+            r##"
+                .
+                |   { "boot_build.alpine" }
+            "##
+        ],
+
+        [
+            "postproc",
+            "."
+        ],
+    ]],
+]
+),
+
+])//Script

@@ -1,0 +1,1 @@
+::sanctioned/vagrant:Vagrantfile.rb

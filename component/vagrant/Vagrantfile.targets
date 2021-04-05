@@ -1,0 +1,77 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+if ENV['VAGRANT_DOCTOR']
+  require_relative "lib/doctor"
+end
+
+def targets
+  @targets ||= (
+    name = 'TARGETS_YAML'
+    source = ENV[name]
+    # STDERR.puts "#{__FILE__}:#{__LINE__}: Loading #{name}=#{source}"
+    require 'yaml'
+    YAML.load(source)
+  )
+end
+
+def col c, s
+  "\x1b[38;5;#{c}m#{s}\x1b[m"
+end
+
+Vagrant.configure("2") do |config|
+
+  targets.each do |name, vm_config|
+    STDERR.puts col(111, name)
+
+    box = vm_config["box"]
+    STDERR.puts \
+      (col(242, "box    :: ") + col(112, box))
+
+    ports = vm_config["ports"]
+    STDERR.puts \
+      (col(242, "ports  :: ") +
+       col(112 + (+ 2) * 6 + (+ 1), ports&.join(", ")))
+
+    prov = vm_config["provider"] || "virtualbox"
+    STDERR.puts \
+      (col(242, "provide:: ") + col(112 + (+3)*6, prov))
+
+    port_range = vm_config["port_range"]
+
+    config.vm.define(name) do |config|
+
+
+      config.vm.box = box if box
+
+      config.vm.usable_port_range = port_range
+
+      config.vm.provider prov["name"] do |p|
+
+    pp prov, vm_config
+        default_config = case prov["name"]
+          when "docker" then {
+              "name": "ct.#{name}",
+              "remains_running": true,
+              "force_host_vm": true,
+          }
+          when "virtualbox" then {
+              "gui": false,
+              "name": "ct.#{name}",
+              "linked_clone": true,
+              "check_guest_additions": false,
+              "memory": 512,
+              "cpus":  1,
+          }
+          else raise "Unknown provida: #{prov["name"]} -- #{prov.inspect}"
+        end
+
+        (default_config.merge prov["config"]).each do |k, v|
+          p.send("#{k}=".to_sym, v)
+        end
+
+      end
+    end
+  end
+
+end

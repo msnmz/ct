@@ -1,0 +1,38 @@
+[package]
+name = 'xr'
+version = '0.0.1'
+edition = '2018'
+[dependencies.git2]
+version = '0.13.14'
+optional = true
+
+[dependencies.log]
+version = '0.4'
+
+[dependencies.pretty_env_logger]
+version = '0.4'
+
+[dependencies.wind_std_list]
+git = 'https://gitlab.com/gvz/rs'
+package = 'wind_std_list'
+branch = 'main'
+
+[dependencies.xerr]
+git = 'https://gitlab.com/gvz/rs'
+package = 'xerr'
+branch = 'main'
+
+[dependencies.xr-dyn]
+version = '0.0.1'
+path = '../xr-dyn'
+
+[dependencies.xr-parse]
+version = '0.0.1'
+path = '../xr-parse'
+
+[dependencies.xr-token]
+version = '0.0.1'
+path = '../xr-token'
+
+[features]
+default = ['git2']

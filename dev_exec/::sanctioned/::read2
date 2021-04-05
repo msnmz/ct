@@ -1,0 +1,68 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Alias ("streamify",
+    Exec(output: Stream,
+        cmd: "xs",
+        args: [
+            "-ah", "str", (var: "streamify:in.str"),
+            "-c", r####"
+                Script([
+                    WriteFile ("/dev/stdout", (var: "str")),
+                ])
+            "####,
+        ],
+    )
+),
+
+Let ("streamify:in.str", Expr((var: "_"))),
+Alias ("argstream", AliasStmt("streamify")),
+Let ("argument",
+    Exec (output: String, cwd: Some("."),
+        cmd: "xc",
+        args: ["yj"],
+        stdin: Source("argstream"),
+    )
+),
+//WriteFile ("/dev/stderr", (var: "argument")),
+
+Alias ("getarg",
+    Exec (output: String,
+        cmd: "jq",
+        args: [
+            "--exit-status",
+            "--null-input", "--raw-output", "--join-output",
+            "--arg", "name", (var: "getarg:in.name"),
+            "--argjson", "arg", (var: "argument"),
+
+            r####"
+                $arg[$name] // (
+                    "Missing \($name) argument.\n" |
+                    halt_error(1)
+                )
+            "####,
+        ],
+    ),
+),
+
+Let ("getarg:in.name", Expr("ns")),
+Let ("ns", AliasStmt("getarg")),
+
+Let ("getarg:in.name", Expr("itemns")),
+Let ("itemns", AliasStmt("getarg")),
+
+Let ("getarg:in.name", Expr("item")),
+Let ("item", AliasStmt("getarg")),
+
+Exec (output: Display,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/::read",
+        "-ah", "ns", (var: "ns"),
+        "-ah", "itemns", (var: "itemns"),
+        "-ah", "item", (var: "item"),
+    ]
+),
+
+])//Script

@@ -1,0 +1,12 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script ([
+
+    Exec (
+        cmd: "rm", cwd: Some(".local/"),
+        output: Display,
+        args: ["-rvf", "cache"]
+    )
+
+])

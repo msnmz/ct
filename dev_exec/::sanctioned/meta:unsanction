@@ -1,0 +1,62 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+    Let ("DEV_EXEC", Expr ("dev_exec/")),
+    Let ("SANC", Expr ("::sanctioned/")),
+
+    // TODO: stdlib
+    Alias ("prefix",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "prefix", (var: "prefix:in.prefix"),
+                "-ah", "value", (var: "prefix:in.value"),
+                "-c",
+                r####"
+                    Script([
+                        WriteFile("/dev/stdout", (var: "prefix")),
+                        WriteFile("/dev/stdout", (var: "value")),
+                    ])
+                "####,
+            ],
+        )
+    ),
+
+    Let ("prefix:in.prefix", Expr ((var: "DEV_EXEC"))),
+    Let ("prefix:in.value", Expr ((var: "SANC"))),
+    Let ("dest_dir", AliasStmt ("prefix")),
+    // dev_exec/::sanctioned
+
+    Let ("prefix:in.prefix", Expr ((var: "DEV_EXEC"))),
+    Let ("prefix:in.value", Expr ((var: "name"))),
+    Let ("mv:in.source", AliasStmt ("prefix")),
+    // dev_exec/SCRIPT
+
+    Let ("prefix:in.prefix", Expr ((var: "dest_dir"))),
+    Let ("prefix:in.value", Expr ((var: "name"))),
+    Let ("mv:in.destination", AliasStmt ("prefix")),
+    // dev_exec/::sanctioned/SCRIPT
+
+    Let ("prefix:in.prefix", Expr (".local/bin.edge/")),
+    Let ("prefix:in.value", Expr ((var: "name"))),
+    Let ("bin:in.destination", AliasStmt ("prefix")),
+    // .local/bin.edge/SCRIPT
+
+    Exec (output: Display,
+        cmd: "git",
+        args: [
+            "mv", "--force", "--verbose",
+            (var: "mv:in.destination"),
+            (var: "mv:in.source"),
+        ]
+    ),
+
+    Exec (output: Display,
+        cmd: "rm",
+        args: [
+            "-fv",
+            (var: "bin:in.destination")
+        ],
+    ),
+])//Script

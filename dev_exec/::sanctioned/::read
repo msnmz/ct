@@ -1,0 +1,78 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Alias ("alloc:paths",
+Exec (output: String,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/::alloc:paths",
+        "-ah", "ns", (var: "ns"),
+        "-ah", "itemns", (var: "itemns"),
+        "-ah", "item", (var: "item"),
+        "-ah", "query", (var: "$query"),
+    ],
+)),
+
+Let ("$query", Expr (".filepath")),
+Let ("path", AliasStmt("alloc:paths")),
+Let ("$query", Expr (".banner")),
+Let ("banner", AliasStmt("alloc:paths")),
+Let ("$query", Expr (".banner_no_colour")),
+Let ("banner_no_colour", AliasStmt("alloc:paths")),
+
+Alias ("loading",
+Exec (output: Stream,
+    cmd: "pv",
+    args: [
+        "--progress",
+        "--timer",
+        "--rate",
+        "--average-rate",
+        "--bytes",
+        "--buffer-percent",
+        "--name", (var: "banner_no_colour"),
+        "--force",
+        "--cursor",
+        (var: "path")
+    ],
+)),
+
+Let ("COL0", Expr ((bs:
+    // \x1b [   3  8   ;   5   ;   1  9  2   m
+    [  27,  91, 51,56, 59, 53, 59, 49,57,50, 109]
+))),
+Let ("COL1", Expr ((bs:
+    // \x1b [   3  8   ;   5   ;   1  1  1   m
+    [  27,  91, 51,56, 59, 53, 59, 49,49,49, 109]
+))),
+Let ("COL2", Expr ((bs:
+    // \x1b [   3  8   ;   5   ;   1  1  2   m
+    [  27,  91, 51,56, 59, 53, 59, 49,49,50, 109]
+))),
+Let ("COL3", Expr ((bs:
+    // \x1b [   3  8   ;   5   ;   2  2  2   m
+    [  27,  91, 51,56, 59, 53, 59, 50,50,50, 109]
+))),
+Let ("RESET", Expr ((bs:
+    // \x1b [   m
+    [  27,  91, 109]
+))),
+////TODO: built-in format/something
+WriteFile ("/dev/stderr", "[ 🚜 ]. "),
+WriteFile ("/dev/stderr", (var: "COL1")),
+WriteFile ("/dev/stderr", "Import["),
+WriteFile ("/dev/stderr", (var: "COL3")),
+WriteFile ("/dev/stderr", (var: "ns")),
+WriteFile ("/dev/stderr", (var: "COL1")),
+WriteFile ("/dev/stderr", "]"),
+WriteFile ("/dev/stderr", (var: "COL0")),
+WriteFile ("/dev/stderr", " || "),
+WriteFile ("/dev/stderr", (var: "COL2")),
+WriteFile ("/dev/stderr", (var: "banner")),
+WriteFile ("/dev/stderr", (var: "RESET")),
+WriteFile ("/dev/stderr", (bs: [0x0a])),
+
+WriteFile ("/dev/stdout", (source: "loading")),
+
+])//Script

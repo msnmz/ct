@@ -1,0 +1,61 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+    Alias ("this",
+        Exec (output: Stream,
+            cmd: "xs",
+            args: ["-c", r###"
+                Script([
+                    WriteFile ("/dev/stdout", "Hello, moll"),
+                ])
+            "###]
+        ),
+    ),
+
+
+    Let ("ll", Expr("jj")),
+    Let ("jj", Expr([
+        "So, even",
+        [
+            (source: "this"),
+            (var: "ll"),
+        ]
+    ])),
+
+    Alias ("j",
+        Exec (output: Stream,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/std::to_json",
+                "-ah", "val", [
+                    r###"
+                        Hello Darkness, my ol
+                    "###,
+                    (bs: [0]),
+                    (var: "ll"),
+                    [
+                        "Frien",
+                        (s: "Ss"),
+                    ],
+                    (var: "jj"),
+                ]
+            ]
+        ),
+    ),
+
+    Exec (output: Display,
+        cmd: "jq",
+        cwd: Some("."),
+        stdin: Source("j"),
+    ),
+
+
+Let (
+"__SPEC__::stdout:json_eq",
+Expr (
+r####"
+["\n                        Hello Darkness, my ol\n                    ",[0],"jj",["Frien","Ss"],["So, even",["\n                Script([\n                    WriteFile (\"/dev/stdout\", \"Hello, moll\"),\n                ])\n            ","jj"]]]
+"####,
+)),//Spec
+])//Script

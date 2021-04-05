@@ -1,0 +1,96 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+    Alias ("dev_exec/",
+        List([
+            Alias ("list",
+                Exec (output: Stream,
+                    cmd: "ls",
+                    args: ["-1l", "dev_exec/"],
+                )
+            ),
+            Exec (output: Stream,
+                cmd: "sort",
+                stdin: Source ("list"), cwd: Some("."),
+            ),
+        ])
+    ),
+
+    Alias ("select topic in dev_exec",
+        Exec (output: Stream,
+            cmd: "grep",
+            args: [(var: "topic")],
+            stdin: Source("dev_exec/"), cwd: Some("."),
+        ),
+    ),
+    //WriteFile ("/dev/stderr", (source: "select topic in dev_exec")),
+
+    Let ("topic count",
+        Exec (output: String,
+            cmd: "wc",
+            args: ["-l"],
+            stdin: Source("select topic in dev_exec"), cwd: Some("."),
+        )
+    ),
+    //WriteFile ("/dev/stderr", (var: "topic count")),
+
+    Alias ("select sanctioned in topic",
+        Exec (output: Stream,
+            cmd: "grep",
+            args: ["::sanctioned/"],
+            stdin: Source("select topic in dev_exec"), cwd: Some("."),
+        )
+    ),
+    //WriteFile ("/dev/stderr", (source: "select sanctioned in topic")),
+
+    Let ("sanctioned topic count",
+        Exec (output: String,
+            cmd: "wc",
+            args: ["-l"],
+            stdin: Source("select sanctioned in topic"), cwd: Some("."),
+        )
+    ),
+    //WriteFile ("/dev/stderr", (var: "sanctioned topic count")),
+
+    Alias ("git-hash-object",
+        List([
+            Alias ("hash/write",
+                Exec (output: Stream,
+                    cmd: "git",
+                    args: [
+                        "hash-object",
+                        "-w",
+                        "--stdin",
+                        "--no-filters",
+                    ],
+                    stdin: Source("git-hash-object:in.object_data"), cwd: Some("."),
+                )
+            ),
+            Exec (output: String,
+                cmd: "tr",
+                args: ["-d", r#"
+"#],
+                stdin: Source("hash/write"), cwd: Some("."),
+            )
+        ])
+    ),
+
+    Alias ("git-hash-object:in.object_data", Expr((source: "select topic in dev_exec"))),
+    Let ("topics-id", AliasStmt ("git-hash-object")),
+    //WriteFile ("/dev/stderr", (var: "topics-id")),
+
+    Alias ("git-hash-object:in.object_data", Expr((source: "select sanctioned in topic"))),
+    Let ("sanctioned-id", AliasStmt ("git-hash-object")),
+    //WriteFile ("/dev/stderr", (var: "sanctioned-id")),
+
+    Exec (output: Display,
+        cmd: "git",
+        args: [
+            "diff",
+            "--exit-code",
+            (var: "topics-id"),
+            (var: "sanctioned-id"),
+        ]
+    ),
+])//Script

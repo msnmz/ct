@@ -1,0 +1,15 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script ([
+    Let ("rustup.sh", Exec (
+        cmd: "curl", output: String,
+        args: [
+            "--proto", "=https",
+            "--tlsv1.2", "-sSf",
+            "https://sh.rustup.rs",
+        ],
+    )),
+
+    Exec ( cmd: "sh", args: ["-c", (var: "rustup.sh")] )
+])

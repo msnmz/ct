@@ -1,0 +1,15 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Alias ("out",
+Exec (output: Stream,
+    cmd: "cargo", cwd: Some("component/cargo"),
+    args: [
+        "update",
+    ]
+)),
+
+WriteFile ("/dev/stdout", (source: "out")),
+
+])//Script

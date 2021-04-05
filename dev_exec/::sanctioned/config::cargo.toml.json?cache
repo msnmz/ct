@@ -1,0 +1,21 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script([
+
+//TODO: InTheWild::Piped_Stdin_Form
+Alias ("cache",
+Exec (output: Stream,
+    cmd: "xs",
+    args: [
+    "-f", "dev_exec/config::cargo.toml.json",
+    "-ah", "$named.query",
+        r####"
+            $conf.build."target-dir"
+        "####,
+    ],
+)),
+
+WriteFile ("/dev/stdout", (source: "cache")),
+
+])//Script

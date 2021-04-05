@@ -1,0 +1,26 @@
+[workspace]
+members = [
+    './xc',
+    './xr',
+    './xr-dyn',
+    './xr-parse',
+    './xr-token',
+    './xs',
+]
+[patch.crates-io.xc]
+path = './xc'
+
+[patch.crates-io.xr]
+path = './xr'
+
+[patch.crates-io.xr-dyn]
+path = './xr-dyn'
+
+[patch.crates-io.xr-parse]
+path = './xr-parse'
+
+[patch.crates-io.xr-token]
+path = './xr-token'
+
+[patch.crates-io.xs]
+path = './xs'

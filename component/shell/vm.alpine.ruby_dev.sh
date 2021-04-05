@@ -1,0 +1,9 @@
+ruby \
+ruby-dbm \
+ruby-etc \
+ruby-irb \
+ruby-json \
+ruby-dev \
+postgresql-dev \
+libxml2-dev \
+libxslt-dev \

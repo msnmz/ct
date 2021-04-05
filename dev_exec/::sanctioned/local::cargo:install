@@ -1,0 +1,38 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script([
+
+WriteFile ("/dev/stderr",
+r####"
+UNIX SBDSD NetLix Manual - 1988 - NASA Derivative
+
+                                        [dev_exec/sudo:install.local :: 9]
+
+      This is unacceptable.
+
+                        - The Script.
+
+"####
+),
+
+Exec (output: Display,
+    cmd: "rm",
+    args: ["-rvf",
+        ".local/bin.edge/xc",
+        ".local/bin.edge/xs",
+        ".local/bin.edge/xr",
+    ]
+),
+
+Exec (output: Display,
+    cmd: "cp",
+    args: ["-av",
+        ".cache/cargo/debug/xc",
+        ".cache/cargo/debug/xs",
+        ".cache/cargo/debug/xr",
+        ".local/bin.edge"
+    ]
+),
+
+])//Script

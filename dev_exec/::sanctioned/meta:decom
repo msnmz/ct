@@ -1,0 +1,51 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+    Let ("DEV_EXEC", Expr ("dev_exec/")),
+    Let ("DECOM", Expr ("::decommission/")),
+
+    // TODO: stdlib
+    Alias ("prefix",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "prefix", (var: "prefix:in.prefix"),
+                "-ah", "value", (var: "prefix:in.value"),
+                "-c",
+                r####"
+                    Script([
+                        WriteFile("/dev/stdout", (var: "prefix")),
+                        WriteFile("/dev/stdout", (var: "value")),
+                    ])
+                "####,
+            ],
+        )
+    ),
+
+    Let ("prefix:in.prefix", Expr ((var: "DEV_EXEC"))),
+    Let ("prefix:in.value", Expr ((var: "DECOM"))),
+    Let ("dest_dir", AliasStmt ("prefix")),
+
+    Let ("prefix:in.prefix", Expr ((var: "DEV_EXEC"))),
+    Let ("prefix:in.value", Expr ((var: "name"))),
+    Let ("mv:in.source", AliasStmt ("prefix")),
+
+    Let ("prefix:in.prefix", Expr ((var: "dest_dir"))),
+    Let ("prefix:in.value", Expr ((var: "name"))),
+    Let ("mv:in.destination", AliasStmt ("prefix")),
+
+    Exec (output: Display,
+        cmd: "mkdir",
+        args: ["-p", (var: "dest_dir")],
+    ),
+
+    Exec (output: Display,
+        cmd: "echo",
+        args: [
+            "mv",
+            (var: "mv:in.source"),
+            (var: "mv:in.destination"),
+        ]
+    ),
+])//Script

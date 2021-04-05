@@ -1,0 +1,29 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Let ("ssh-config",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/vagrant:",
+            "-ah", "_", [
+                "ssh-config",
+                "--no-tty",
+            ],
+        ]
+    )
+),
+
+Exec (output: Display,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/::alloc",
+        "-ah", "ns", "art",
+        "-ah", "itemns", "vagrant",
+        "-ah", "item", "ssh_config",
+        "-ah", "art", (var: "ssh-config"),
+    ],
+),
+
+])//Script

@@ -1,0 +1,283 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+// Generate the jq query that selects something relevant from the database.
+//
+// slct     :: the name of thing being selected ("source", "recipe", "postproc")
+// scrpt    :: the *script* that performs the selection *under* the `slct` object
+//
+// Essentially runs
+//
+//      $db.<slct> | <scrpt>
+//
+Alias ("gen-selector.jq",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-ah", "slct", (var: "gen-selector:in.selectable"),
+            "-ah", "scrpt", (var: "gen-selector:in.selector"),
+            "-c",
+            r####"
+                Script([
+                    WriteFile ("/dev/stdout", r###"."###),
+                    WriteFile ("/dev/stdout", (var: "slct")),
+                    WriteFile ("/dev/stdout", r###"|"###),
+                    WriteFile ("/dev/stdout", (var: "scrpt")),
+                ])
+            "####
+        ]
+    )
+),
+
+//
+// Generate the selector script snippets
+//
+// select-source:
+//
+Let ("gen-selector:in.selectable", Expr("source")),
+Let ("gen-selector:in.selector", Expr((var: "select.source.jq"))),
+Let ("select.source.jq", AliasStmt("gen-selector.jq")),
+//
+// select-recipe:
+//
+Let ("gen-selector:in.selectable", Expr("recipe")),
+Let ("gen-selector:in.selector", Expr((var: "select.recipe.jq"))),
+Let ("select.recipe.jq", AliasStmt("gen-selector.jq")),
+//
+// select-postproc:
+//
+Let ("gen-selector:in.selectable", Expr("postproc")),
+Let ("gen-selector:in.selector", Expr((var: "select.postproc.jq"))),
+Let ("select.postproc.jq", AliasStmt("gen-selector.jq")),
+
+//
+// Generate the complete jq-selector script, which selects all selectable
+// entities from the DB, according to the queries given as top-level arguments
+// to this script.
+//
+// Essentially runs:
+//
+//      {
+//          source_selection: $db.source | <select.source>,
+//          recipe_selection: $db.source | <select.recipe>,
+//          postproc_selection: $db.source | <select.postproc>,
+//      }
+//      (approx and subject to being outdated documentation)
+//      (last check: 2021-03-25 It is not)
+//
+Let ("db.selector.jq",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-ah", "select.source.jq", (var: "select.source.jq"),
+            "-ah", "select.recipe.jq", (var: "select.recipe.jq"),
+            "-ah", "select.postproc.jq", (var: "select.postproc.jq"),
+            "-c",
+            r####"
+                Script([
+                    WriteFile ("/dev/stdout", r###"."###),
+
+                    WriteFile ("/dev/stdout", r###"| ($db | "###),
+                    WriteFile ("/dev/stdout", (var: "select.source.jq")),
+                    WriteFile ("/dev/stdout", r###") as $source_selection"###),
+
+                    WriteFile ("/dev/stdout", r###"| ($db | "###),
+                    WriteFile ("/dev/stdout", (var: "select.recipe.jq")),
+                    WriteFile ("/dev/stdout", r###") as $recipe_selection"###),
+
+                    WriteFile ("/dev/stdout", r###"| ($db | "###),
+                    WriteFile ("/dev/stdout", (var: "select.postproc.jq")),
+                    WriteFile ("/dev/stdout", r###") as $postproc_selection"###),
+
+
+                    WriteFile ("/dev/stdout", r###"| {$source_selection, $recipe_selection, $postproc_selection}"###),
+                ])
+            "####
+        ]
+    )
+),
+//  Uncomment these lines to print the selector script (and three new-lines)
+//  to stderr during execution of this script.
+//WriteFile ("/dev/stderr", (bs:[10,10,10])),
+//WriteFile ("/dev/stderr", (var: "db.selector.jq")),
+
+
+// Make the actual selection of items from the DB, according to the generated
+// selector script from above.
+//
+Let ("db",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/db::",
+            "-ah", "component", "packer",
+            "-ah", "selector", (var: "db.selector.jq"),
+        ],
+    ),
+),
+// Comment in to print the loaded DB (with the given selector queries)
+// to stderr, with pretty colours from jq.
+//Alias("dbg", Exec(output:Stream,cmd:"jq",args:["-neC","--argjson","o",(var:"db"),"$o"])),
+//WriteFile("/dev/stderr",(source: "dbg")),
+
+//
+// Load SSH configuration for Null builders from the vagrant exports.
+//
+Let ("ssh_config.json",
+    List([
+        Alias("1", Exec (output: Stream,
+            cmd: "xs",
+            args: ["-f", "dev_exec/::read",
+                "-ah", "ns", "art",
+                "-ah", "itemns", "vagrant",
+                "-ah", "item", "ssh_config",
+            ]
+        )),
+        Exec (output: String,
+            cmd: "xc",
+            args: ["hj"],
+            stdin: Source("1"), cwd: Some("."),
+        )
+    ])
+),
+// Comment in to print ssh_config.json to stderr.
+// Warning: no pretty colours from jq -- json mess.
+//WriteFile("/dev/stderr", (var: "ssh_config.json")),
+
+//
+// Get an artifacts-entry for packer to store the build manifest.
+//
+Alias ("art.paths",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/::alloc:paths",
+            "-ah", "ns", "art",
+            "-ah", "itemns", "packer",
+            "-ah", "item", "manifest.json",
+            "-ah", "query", (var: "art.paths:in.query"),
+        ]
+    )
+),
+
+Let ("art.paths:in.query", Expr(".")),
+Let ("manifest.paths", AliasStmt("art.paths")),
+
+//
+// Create the artifact directory in case it doesn't exist
+//
+Let ("art.paths:in.query", Expr(".dir")),
+Let ("art.dir", AliasStmt("art.paths")),
+Exec (
+    cmd: "mkdir",
+    args: ["-p", (var: "art.dir")]
+),
+
+//
+// Generate the packer.build.pkr.json file from the database selection.
+//
+Exec (output: Display,
+    cmd: "jq",
+    args: [
+        "--exit-status",
+        "--null-input",
+        "--argjson", "mnfpaths", (var: "manifest.paths"),
+        "--argjson", "db", (var: "db"),
+        "--argjson", "ssh_config", (var: "ssh_config.json"),
+        r####"
+
+        ($mnfpaths.filepath) as $ARTIFACT_MANIFEST_PATH |
+
+        def to_packer_source_vagrant:
+            .value = {
+                communicator: "ssh",
+                source_path: "??",
+            }
+        ;
+
+        def to_packer_source_null:. as { key: $name, value: { $source_vm } }
+        |   ($source_vm // "vm.\($name)") as $source_vm
+        |   ($ssh_config[] | select(.[0] == $source_vm)[1]) as $ssh_config
+        |   def ssh_get($attr):.
+            |   $ssh_config[]
+            |   select(.[0] == $attr)[1]
+            |   join(" ")
+            ;
+        {
+            key: $name,
+            value: {
+                communicator: "ssh",
+                ssh_host: ssh_get("HostName"),
+                ssh_port: ssh_get("Port"),
+                ssh_username: ssh_get("User"),
+                ssh_private_key_file: ssh_get("IdentityFile"),
+            }
+        }
+        ;
+
+        def to_packer_source:.
+        |   . as { $vagrant } ?// { $null }
+        |   if $vagrant
+            then (
+                .vagrant |= (to_entries | map(to_packer_source_vagrant) | from_entries)
+            ) else if $null
+            then (
+                .null |= (to_entries | map(to_packer_source_null) | from_entries)
+            ) else (
+                "What: \(.)" | error
+            ) end end
+        ;
+
+        def to_packer_source_reference:.
+        |   to_packer_source            # {null: {alpine: {}, ubuntu: {}, ... }}
+        |   to_entries                  # [{ key: "null", value: {alpine:{},...} }]
+        |   map(.
+            |   .key as $provider
+            |   .value
+            |   to_entries[].key
+            |   "\($provider).\(.)"
+            |.)
+        |   .[]
+        ;
+
+        def to_packer_provisioner:.
+        |   to_entries[]    # recipes
+        |   .value
+        |   map("component/shell/\(.).sh")
+        |   {
+                shell: [
+                    { scripts: . , name: "boba" }
+                ]
+            }
+        ;
+
+        .
+        |
+            {
+                source: $db.source_selection | to_packer_source,
+                build: [
+                    {
+                        # TODO link to "build" in vagrant database, which links to everything else in here
+                        name: "otomatik",
+                        sources: [
+                            $db.source_selection | to_packer_source_reference
+                        ],
+                        provisioner: [
+                            $db.recipe_selection | to_packer_provisioner
+                        ],
+                        "post-processor": {
+                            manifest: [
+                                {
+                                    output: $ARTIFACT_MANIFEST_PATH
+                                }
+                            ]
+                        },
+                    }
+                ],
+            }
+        "####
+    ],
+)
+
+])//Script

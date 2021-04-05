@@ -1,0 +1,90 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script ([
+
+//
+// Debugging aliases
+//
+// Use with (var: "$1") for the object to debug.
+//
+// * jqi for json
+// * jqis for string
+//
+Alias ( "jqi",
+    List([
+        Let ( "x", Exec (
+            cmd: "jq", output:String,
+            args:[
+                "-nC",
+                "--argjson", "pkr", (var: "$1"),
+                "$pkr",
+            ],
+        ),),
+        WriteFile ("/dev/stderr", (var: "x")),
+    ]),
+),
+Alias ( "jqis",
+    List([
+        Let ( "x", Exec (
+            cmd: "jq", output:String,
+            args:[
+                "-nC",
+                "--arg", "pkr", (var: "$1"),
+                "$pkr",
+            ],
+        ),),
+        WriteFile ("/dev/stderr", (var: "x")),
+    ]),
+),
+
+Let ("build.pkr.json",
+Exec (output: String, cwd: Some("component/packer"),
+    cmd: "xc", stdin: File("build.pkr.ron"),
+    args: ["rj"],
+)),
+Let ("$1", Expr ((var: "build.pkr.json"))), // AliasStmt("jqi"), // Comment-in: debug "build.pkr.json"
+
+
+Alias ("storing:build.pkr.json",
+Exec (output: Stream,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/cache::alloc.packer:build",
+        "-ah", "art", (var: "build.pkr.json"),
+    ],
+)),
+WriteFile ("/dev/stdout", (source: "storing:build.pkr.json")),
+
+Let ("project_root",
+    Exec (cmd: "git", output: String, args: ["rev-parse", "--show-toplevel"]),
+),
+Let ("project_root",
+    Exec (
+        cmd: "jq", output: String,
+        args: ["-n", "--arg", "root", (var: "project_root"),
+        r###"
+
+    ($root | rtrimstr("\n")) as $root |
+
+    {
+        Root: "../../..",
+        RootAbsolute: $root,
+    }
+
+        "###,
+    ]),
+),
+
+//Let ("$1", Expr ((var: "project_root"))), AliasStmt("jqi"),
+Alias ("cache",
+Exec (output: Stream,
+    cmd: "xs",
+    args: [
+        "-f", "dev_exec/cache::alloc.packer:var.project_root",
+        "-ah", "art", (var: "project_root"),
+    ],
+)),
+
+WriteFile ("/dev/stdout", (source: "cache")),
+
+])//Script

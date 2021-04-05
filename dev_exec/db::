@@ -1,0 +1,58 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+Let ("db-loader.xs:part1", Expr(r####"
+    Script([
+        Let ("db",
+            Exec (output: Display,
+                cmd: "xc", cwd: Some("."),
+                stdin: File("component/"####
+)),
+Let ("db-loader.xs:part2", Expr(
+    r####"/Database.ron"),
+            )
+        )
+    ])
+"####)),
+
+Let ("db-loader.xs",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-ah", "part1", (var: "db-loader.xs:part1"),
+            "-ah", "part2", (var: "db-loader.xs:part2"),
+            "-ah", "component", (var: "component"),
+            "-c",
+            r####"
+                Script([
+                    WriteFile ("/dev/stdout", (var: "part1")),
+                    WriteFile ("/dev/stdout", (var: "component")),
+                    WriteFile ("/dev/stdout", (var: "part2")),
+                ])
+            "####
+        ]
+    )
+),
+
+Let ("db",
+    Exec (output: String,
+        cmd: "xs",
+        args: ["-c", (var: "db-loader.xs")]
+    )
+),
+
+
+Alias ("select", Exec (output: Stream,
+    cmd: "jq", args: [
+        "--null-input",
+        "--argjson", "db", (var: "db"),
+        (var: "selector"),
+    ],
+)),
+
+Alias ("result", AliasStmt("select")),
+
+WriteFile ("/dev/stdout", (source: "result")),
+
+])//Script

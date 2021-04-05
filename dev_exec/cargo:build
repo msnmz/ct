@@ -1,0 +1,12 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script ([
+
+    Exec (
+        cmd: "cargo",
+        cwd: Some("./component/cargo"),
+        args: ["build", "--workspace", "--all-targets"]
+    ),
+
+])

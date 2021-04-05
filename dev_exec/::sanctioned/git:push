@@ -1,0 +1,44 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+
+Script([
+
+    Exec (
+        cmd: "ssh-agent",
+        args: [
+            "/usr/local/bin/xs",
+            "-c",
+            r###"
+
+            Script([
+
+                Let ("ssh-key",
+                    Exec (
+                        cmd: "cat",
+                        args: [
+                            ".local/etc/ssh-key"
+                        ],
+                        output: String,
+                    ),
+                ),
+
+                Exec (
+                    cmd: "ssh-add",
+                    args: [
+                        (var: "ssh-key"),
+                    ],
+                ),
+
+                Exec (
+                    cmd: "git",
+                    args: [
+                        "push",
+                    ],
+                ),
+            ])
+
+            "###,
+        ],
+    ),
+
+])

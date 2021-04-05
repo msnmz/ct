@@ -1,0 +1,93 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script ([
+
+Let ("paths",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/packer:config",
+        ],
+    )
+),
+//Exec(output:Display,cmd:"jq",args:["-nC","--argjson","o",(var:"paths"),"$o"]),
+
+// Extract a field from paths
+Alias ("extract",
+    Exec (output: String,
+        cmd: "jq",
+        args: [
+            "--exit-status",
+            "--null-input", "--raw-output", "--join-output",
+            "--argjson", "paths", (var: "paths"),
+            (var: "extract:in.q")
+        ]
+    )
+),
+
+// Extract .dir
+Let ("extract:in.q", Expr("$paths.dir")),
+Let ("dir", AliasStmt("extract")),
+
+// Extract .path (just to debug)
+Let ("extract:in.q", Expr("$paths.filepath")),
+Let ("path", AliasStmt("extract")),
+//Alias("dbg", Exec (output: Stream, cmd: "jq", args: ["-neC", "--slurpfile", "p", (var: "path"), "$p[]"])),
+//WriteFile("/dev/stderr", (source: "dbg")),
+
+//
+// ## Generate the packer-runner script
+//
+
+// Part 1
+Let ("packer-runner.part1", Expr (r####"
+    Script([
+        Exec (output: Display,
+            cmd: "packer",
+            args: "####
+)),
+// Part 2
+Let ("packer-runner.part2", Expr (r####"
+        )
+    ])
+"####)),
+// Append <dir> to <args>
+Let ("args2",
+    Exec (output: String,
+        cmd: "jq",
+        args: [
+            "--null-input", "--compact-output", "--join-output",
+            "--argjson", "args", (var: "_"),
+            "--arg", "arg", (var: "dir"),
+            "[$args[], $arg]"
+        ]
+    )
+),
+
+// The final concat of run-packer.xs
+Let ("run-packer.xs",
+    Exec (output: String,
+        cmd: "xs",
+        args: [
+            "-ah", "part1", (var: "packer-runner.part1"),
+            "-ah", "part2", (var: "packer-runner.part2"),
+            "-ah", "args", (var: "args2"),
+            "-c",
+            r####"
+                Script([
+                    WriteFile ("/dev/stdout", (var: "part1")),
+                    WriteFile ("/dev/stdout", (var: "args")),
+                    WriteFile ("/dev/stdout", (var: "part2")),
+                ])
+            "####
+        ]
+    )
+),
+
+// Run/Eval run-packer.xs (it contains arguments already)
+Exec (output: Display,
+    cmd: "xs",
+    args: ["-c", (var: "run-packer.xs")]
+),
+
+])//Script
