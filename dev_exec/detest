@@ -65,6 +65,19 @@ Script([
     Alias ("Update packer configuration"    , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:config"]                       , output: Display)),
     Alias ("Validate packer configuration"  , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["validate"]]   , output: Display)),
     Alias ("Inspect packer configuration"   , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["inspect"]]    , output: Display)),
+    Alias ("Print the generated packer configuration",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::read2",
+                "-ah", "_", r####"
+                    ns: cache
+                    itemns: packer
+                    item: build.pkr.json
+                "####
+            ],
+        )
+    ),
 
     Alias ("Update cargo-build-tag"         , Exec (cmd: "xs", args: ["-f", "dev_exec/cargo:update_buildtag"]               , output: Display)),
 
@@ -82,15 +95,18 @@ Script([
                 "meta",
                 "packer",
                 "git",
-                "push",
+                //"push",
                 //"cargo",
             ])),
             ForEach ("topics",
                 List ([
                     Let ("is_topic_sanctioned:in.topic", Expr (Each)),
 
-                    //WriteFile ("/dev/stderr", "+++ SANCTIONED "),
-                    //WriteFile ("/dev/stderr", (var: "is_topic_sanctioned:in.topic")),
+                    Let ("candle", Expr (r#"🕯️  ""#)),
+                    WriteFile ("/dev/stderr", (var: "candle")),
+                    WriteFile ("/dev/stderr", (var: "is_topic_sanctioned:in.topic")),
+                    WriteFile ("/dev/stderr", r#""
+"#),
 
                     Exec (output: Display,
                         cmd: "xs",
@@ -132,4 +148,6 @@ Script([
     AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
 
     //AliasStmt ("Run a random translation with DeepL.com"),
+
+    AliasStmt ("Print the generated packer configuration"),
 ])//Script
