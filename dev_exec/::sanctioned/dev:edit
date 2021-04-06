@@ -1,19 +1,45 @@
 #!/usr/local/bin/xs -f
 // vim: et ts=4 sw=4 ft=ron
 Script([
+    Let ("Edit-Script",
+        Expr (r####"
+            Script([
+                Exec (output: Display,
+                    cmd: "fish",
+                    args: [
+                        "--init-command",
+                        "source etc/env/dev.fish"
+                    ],
+                ),
+            ])
+        "####)
+    ),
+
     Exec (output: Display,
         cmd: "tmux",
         args: [
             "new-session", "-A",
                 "-n", "Edit",
                 "-s", "ct",
-                "xs", "--error-server",
+                "xs", "-c", (var: "Edit-Script"),
             ";",
             "split-window", "-h",
                 "-t", "ct:Edit.0",
-                "-l", "23%",
                 "-d",
                 "xs", "-f", "dev_exec/::sanctioned/dev:entr.loop",
+            ";",
+            "split-window", "-h", "-b",
+                "-t", "ct:Edit.0",
+                "-d",
+                "xs", "--error-server",
+            ";",
+            "resize-pane",
+                "-t", "ct:Edit.0",
+                "-x", "23%",
+            ";",
+            "resize-pane",
+                "-t", "ct:Edit.2",
+                "-x", "23%",
             ";",
         ],
     ),
