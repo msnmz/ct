@@ -70,17 +70,24 @@ Script([
     Exec (output: Display,
         cmd: "git",
         args: [
-            "mv",
+            "mv", "--force",
             (var: "mv:in.source"),
             (var: "mv:in.destination"),
         ]
     ),
     Exec (output: Display,
         cmd: "ln",
-        args: ["-s", "-v", (var: "bin:in.source"), (var: "bin:in.destination")],
+        args: [
+            "-svf",
+            (var: "bin:in.source"),
+            (var: "bin:in.destination"),
+        ],
     ),
     Exec (output: Display,
         cmd: "git",
-        args: ["add", (var: "bin:in.destination")],
+        args: [
+            "add", "--force",
+            (var: "bin:in.destination"),
+        ],
     ),
 ])//Script
