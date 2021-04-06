@@ -130,8 +130,17 @@ Script([
         )
     ),
 
+    Alias ("git ls-files",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/git:ls-files",
+            ],
+        )
+    ),
+
     AliasStmt ("Clear xs error server terminal"),
-    AliasStmt ("Build cargo workspace"),
+    //AliasStmt ("Build cargo workspace"),
 
     //AliasStmt ("Dev-loop meta::sanctioned"),
 
@@ -143,11 +152,13 @@ Script([
 
     //AliasStmt ("Update cargo-build-tag"),
 
-    AliasStmt ("Run the cargo-cache-dir query"),
+    //AliasStmt ("Run the cargo-cache-dir query"),
 
-    AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
+    //AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
 
     //AliasStmt ("Run a random translation with DeepL.com"),
 
-    AliasStmt ("Print the generated packer configuration"),
+    AliasStmt ("git ls-files"),
+
+    //AliasStmt ("Print the generated packer configuration"),
 ])//Script

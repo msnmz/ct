@@ -1,0 +1,103 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([//-0
+
+    // git <args> | sort
+    //
+    Alias ("mk-git-sort-xs",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "args", (var: "git-sort:in.args"),
+                "-c",
+                r####"
+                    Script([//-1
+                        WriteFile("/dev/stdout", r###"
+        Script([//-2
+            Alias ("git",
+                Exec (output: Stream,
+                    cmd: "git",
+                    args: "###),
+
+                        WriteFile("/dev/stdout", r(var: "args")),
+                        WriteFile("/dev/stdout", r###",
+                )
+            ),
+            Exec (output: Display,
+                cmd: "sort",
+                stdin: Source("git"), cwd: Some("."),
+            ),
+        ])//Script-2
+    "###),
+                    ])//Script-1
+                "####
+            ]
+        )
+    ),
+    Alias ("git-sort",
+        List([
+            Let ("git-sort.xs", AliasStmt ("mk-git-sort-xs")),
+            Exec (output: String,
+                cmd: "xs",
+                args: [
+                    "-c",
+                    (var: "git-sort.xs")
+                ]
+            )
+        ])
+    ),
+
+    // All files in git
+    Let ("git-sort:in.args", Expr (["ls-files", "--", "."])),
+    Let ("git ls --all", AliasStmt ("git-sort")),
+    //WriteFile("/dev/stderr", (var: "git ls --all")),
+
+    // All ignored files in git (on purpose)
+    Let ("git-sort:in.args", Expr (
+        ["ls-files", "--ignored", "--exclude-standard", "--", "."])),
+    Let ("git ls --ignored", AliasStmt ("git-sort")),
+    //WriteFile("/dev/stderr", (var: "git ls --ignored")),
+
+    // Concat all-files and ignored-files.
+    //
+    // Note that ignored files will appear twice in this list.
+    Alias ("cat",
+        Exec (output: Stream,
+            cmd: "xs",
+            args: [
+                "-ah", "all", (var: "git ls --all"),
+                "-ah", "ignored", (var: "git ls --ignored"),
+                "-c",
+                r###"
+                    Script([
+                        WriteFile ("/dev/stdout", (var: "all")),
+                        WriteFile ("/dev/stdout", (var: "ignored")),
+                    ])
+                "###,
+            ],
+        )
+    ),
+    //WriteFile("/dev/stderr", (source: "cat")),
+
+    // Sort them again (prepair for uniq)
+    Alias ("sort",
+        Exec (output: Stream,
+            cmd: "sort",
+            stdin: Source("cat"), cwd: Some("."),
+        )
+    ),
+
+    // All non-ignored files in git
+    Let ("files",
+        // uniq -u prints only items that don't appear twice
+        //
+        Exec (output: String,
+            cmd: "uniq",
+            args: [
+                "-u",
+            ],
+            stdin: Source("sort"), cwd: Some("."),
+        )
+    ),
+    WriteFile("/dev/stdout", (var: "files")),
+])//Script-0

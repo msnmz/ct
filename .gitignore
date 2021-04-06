@@ -1,2 +1,4 @@
 /.local/
-/dev_exec/
+/dev_exec/*
+!/dev_exec/::sanctioned/
+!/dev_exec/::decommission/

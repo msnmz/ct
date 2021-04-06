@@ -53,7 +53,7 @@ WriteFile ("/dev/stdout", (source: "hello")),
 Exec (
     cmd: "git", cwd: Some("dev_exec"),
     args: [
-        "add",
+        "add", "--force",
         (var: "name")
     ],
 ),
