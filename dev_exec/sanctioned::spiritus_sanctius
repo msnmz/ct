@@ -1,0 +1,36 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+    Let ("topics", Expr ([
+        "vagrant",
+        "alloc",
+        "read",
+        "config",
+        "install",
+        "sudo",
+        "meta",
+        "packer",
+        "git",
+        //"push",
+        //"cargo",
+    ])),
+    ForEach ("topics",
+        List ([
+            Let ("is_topic_sanctioned:in.topic", Expr (Each)),
+
+            Let ("candle", Expr (r#"🕯️  ""#)),
+            WriteFile ("/dev/stderr", (var: "candle")),
+            WriteFile ("/dev/stderr", (var: "is_topic_sanctioned:in.topic")),
+            WriteFile ("/dev/stderr", r#""
+"#),
+
+            Exec (output: Display,
+                cmd: "xs",
+                args: [
+                    "-f", "dev_exec/::sanctioned/meta:test_is_topic_sanctioned",
+                    "-ah", "topic", (var: "is_topic_sanctioned:in.topic"),
+                ],
+            ),
+        ])
+    ),
+])//Script
