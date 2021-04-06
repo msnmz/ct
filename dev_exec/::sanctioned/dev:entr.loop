@@ -1,0 +1,22 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+    Alias ("files",
+        Exec (output: Stream,
+            cmd: "xs",
+            args: [
+                "-f",
+                "dev_exec/::sanctioned/git:ls-files",
+            ],
+        )
+    ),
+
+    Exec (output: Display,
+        cmd: "entr",
+        stdin: Source("files"), cwd: Some("."),
+        args: [
+            "-c",
+            "xs", "-f", "dev_exec/::sanctioned/dev:entr.on_loop"
+        ],
+    ),
+])//Script

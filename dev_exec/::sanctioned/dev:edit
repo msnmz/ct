@@ -1,0 +1,20 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+    Exec (output: Display,
+        cmd: "tmux",
+        args: [
+            "new-session", "-A",
+                "-n", "Edit",
+                "-s", "ct",
+                "xs", "--error-server",
+            ";",
+            "split-window", "-h",
+                "-t", "ct:Edit.0",
+                "-l", "23%",
+                "-d",
+                "xs", "-f", "dev_exec/::sanctioned/dev:entr.loop",
+            ";",
+        ],
+    ),
+])//Script
