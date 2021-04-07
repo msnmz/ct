@@ -139,6 +139,12 @@ Script([
         )
     ),
 
+    Alias ("Print the time and date",
+        Exec (output: Display,
+            cmd: "date"
+        )
+    ),
+
     AliasStmt ("Clear xs error server terminal"),
     //AliasStmt ("Build cargo workspace"),
 
