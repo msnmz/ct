@@ -96,7 +96,7 @@ Let ("Box entries to Vagrantfile.rb entries (JQ)", Expr (r####"
 Let ("db", Exec (output: String,
     cmd: "xs",
     args: ["-f",
-        "dev_exec/db::",
+        "dev_exec/::sanctioned/db::",
         "-ah", "component", "vagrant",
         "-ah", "selector", "$db"
     ],

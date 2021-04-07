@@ -110,7 +110,7 @@ Let ("db",
     Exec (output: String,
         cmd: "xs",
         args: [
-            "-f", "dev_exec/db::",
+            "-f", "dev_exec/::sanctioned/db::",
             "-ah", "component", "packer",
             "-ah", "selector", (var: "db.selector.jq"),
         ],
