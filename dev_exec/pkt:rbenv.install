@@ -1,0 +1,21 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+    Let ("install.sh",
+        Exec (output: String,
+            cmd: "curl",
+            args: [
+                "-fsSL",
+                "https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer",
+            ],
+        )
+    ),
+
+    Exec (output: Display,
+        cmd: "/bin/bash",
+        args: [
+            "-c",
+            (var: "install.sh")
+        ]
+    ),
+])//Script

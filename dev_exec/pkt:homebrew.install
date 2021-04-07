@@ -1,0 +1,21 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+    Let ("install.sh",
+        Exec (output: String,
+            cmd: "curl",
+            args: [
+                "-fsSL",
+                "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh",
+            ],
+        )
+    ),
+
+    Exec (output: Display,
+        cmd: "/bin/bash",
+        args: [
+            "-c",
+            (var: "install.sh")
+        ]
+    ),
+])//Script
