@@ -19,7 +19,7 @@ Script([//-0
                     cmd: "git",
                     args: "###),
 
-                        WriteFile("/dev/stdout", r(var: "args")),
+                        WriteFile("/dev/stdout", (var: "args")),
                         WriteFile("/dev/stdout", r###",
                 )
             ),
@@ -54,7 +54,7 @@ Script([//-0
 
     // All ignored files in git (on purpose)
     Let ("git-sort:in.args", Expr (
-        ["ls-files", "--ignored", "--exclude-standard", "--", "."])),
+        ["ls-files", "--ignored", "--exclude-standard"])),
     Let ("git ls --ignored", AliasStmt ("git-sort")),
     //WriteFile("/dev/stderr", (var: "git ls --ignored")),
 

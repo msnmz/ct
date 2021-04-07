@@ -7,9 +7,9 @@ Exec (output: Display,
     args: [
         "-f", "dev_exec/std::to_json",
         "-ah", "val", [
-            //"vm.ubuntu0",
+            "vm.ubuntu0",
             "vm.alpine4",
-            //"docker.alpine",
+            "docker.alpine",
         ],
     ],
 ),

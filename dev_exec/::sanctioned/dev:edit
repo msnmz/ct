@@ -41,6 +41,10 @@ Script([
                 "-t", "ct:Edit.2",
                 "-x", "23%",
             ";",
+            "set-option",
+                "remain-on-exit", "on",
+                "-t", "ct:Edit.2",
+            ";",
         ],
     ),
 ])//Script

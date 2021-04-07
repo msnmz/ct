@@ -84,40 +84,7 @@ Script([
     Alias ("Run the cargo-cache-dir query"  , Exec (cmd: "xs", args: ["-f", "dev_exec/config::cargo.toml.json?cache"]       , output: Display)),
 
     Alias ("Check if sanctioned topics remain sanctioned",
-        List ([
-            Let ("topics", Expr ([
-                "vagrant",
-                "alloc",
-                "read",
-                "config",
-                "install",
-                "sudo",
-                "meta",
-                "packer",
-                "git",
-                //"push",
-                //"cargo",
-            ])),
-            ForEach ("topics",
-                List ([
-                    Let ("is_topic_sanctioned:in.topic", Expr (Each)),
-
-                    Let ("candle", Expr (r#"🕯️  ""#)),
-                    WriteFile ("/dev/stderr", (var: "candle")),
-                    WriteFile ("/dev/stderr", (var: "is_topic_sanctioned:in.topic")),
-                    WriteFile ("/dev/stderr", r#""
-"#),
-
-                    Exec (output: Display,
-                        cmd: "xs",
-                        args: [
-                            "-f", "dev_exec/meta:test_is_topic_sanctioned",
-                            "-ah", "topic", (var: "is_topic_sanctioned:in.topic"),
-                        ],
-                    ),
-                ])
-            ),
-        ])
+        Exec (cmd: "xs", args: ["-f", "dev_exec/::sanctioned/sanctioned::spiritus_sanctius"], output: Display)
     ),
 
     Alias ("Run a random translation with DeepL.com",
@@ -160,11 +127,13 @@ Script([
 
     //AliasStmt ("Run the cargo-cache-dir query"),
 
-    //AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
+    AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
 
     //AliasStmt ("Run a random translation with DeepL.com"),
 
-    AliasStmt ("git ls-files"),
+    //AliasStmt ("git ls-files"),
 
     //AliasStmt ("Print the generated packer configuration"),
+
+    //AliasStmt ("Print the time and date"),
 ])//Script
