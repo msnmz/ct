@@ -112,6 +112,37 @@ Script([
         )
     ),
 
+    Alias ("Create colourful html of ::sanctioned",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/dev:make_source_html",
+                "-ah", "source_namespace", "dev_exec.::sanctioned",
+                "-ah", "source_dir", "dev_exec/::sanctioned",
+            ]
+        ),
+    ),
+    Alias ("Create colourful html of ::decommissioned",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/dev:make_source_html",
+                "-ah", "source_namespace", "dev_exec.::decommission",
+                "-ah", "source_dir", "dev_exec/::decommission",
+            ]
+        ),
+    ),
+    Alias ("Create colourful html of dev_exec/",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/dev:make_source_html",
+                "-ah", "source_namespace", "dev_exec",
+                "-ah", "source_dir", "dev_exec",
+            ]
+        ),
+    ),
+
     AliasStmt ("Clear xs error server terminal"),
     //AliasStmt ("Build cargo workspace"),
 
@@ -136,4 +167,7 @@ Script([
     //AliasStmt ("Print the generated packer configuration"),
 
     //AliasStmt ("Print the time and date"),
+    //AliasStmt ("Create colourful html of ::sanctioned"),
+    //AliasStmt ("Create colourful html of ::decommissioned"),
+    //AliasStmt ("Create colourful html of dev_exec/"),
 ])//Script
