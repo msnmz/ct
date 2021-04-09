@@ -164,9 +164,12 @@ Script([
     //AliasStmt ("Print the generated packer configuration"),
 
     //AliasStmt ("Print the time and date"),
-    AliasStmt ("Create colourful html of ::sanctioned"),
+
+    //AliasStmt ("Create colourful html of ::sanctioned"),
     //AliasStmt ("Create colourful html of ::decommissioned"),
     //AliasStmt ("Create colourful html of dev_exec/"),
+    //WriteFile ("/dev/stderr", (bs:[10,10])),
+
     Exec (output: Display,
         cmd: "xs",
         args: [
