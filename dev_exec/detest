@@ -117,8 +117,7 @@ Script([
             cmd: "xs",
             args: [
                 "-f", "dev_exec/::sanctioned/dev:make_source_html",
-                "-ah", "source_namespace", "dev_exec.::sanctioned",
-                "-ah", "source_dir", "dev_exec/::sanctioned",
+                "-ah", "source_path", r#"["dev_exec", "::sanctioned"]"#,
             ]
         ),
     ),
@@ -127,8 +126,7 @@ Script([
             cmd: "xs",
             args: [
                 "-f", "dev_exec/::sanctioned/dev:make_source_html",
-                "-ah", "source_namespace", "dev_exec.::decommission",
-                "-ah", "source_dir", "dev_exec/::decommission",
+                "-ah", "source_path", r#"["dev_exec", "::decommission"]"#,
             ]
         ),
     ),
@@ -137,8 +135,7 @@ Script([
             cmd: "xs",
             args: [
                 "-f", "dev_exec/::sanctioned/dev:make_source_html",
-                "-ah", "source_namespace", "dev_exec",
-                "-ah", "source_dir", "dev_exec",
+                "-ah", "source_path", r#"["dev_exec"]"#,
             ]
         ),
     ),
@@ -167,7 +164,15 @@ Script([
     //AliasStmt ("Print the generated packer configuration"),
 
     //AliasStmt ("Print the time and date"),
-    //AliasStmt ("Create colourful html of ::sanctioned"),
+    AliasStmt ("Create colourful html of ::sanctioned"),
     //AliasStmt ("Create colourful html of ::decommissioned"),
     //AliasStmt ("Create colourful html of dev_exec/"),
+    Exec (output: Display,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/::sanctioned/std::join",
+            "-ah", "items", r#"["one", "two", "three"]"#,
+            "-ah", "sep", "/"
+        ]
+    ),
 ])//Script

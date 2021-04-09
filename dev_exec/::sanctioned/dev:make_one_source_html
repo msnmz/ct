@@ -1,10 +1,6 @@
 #!/usr/local/bin/xs -f
 // vim: et ts=4 sw=4 ft=ron
 Script([
-    // Make a unique namespace per source directory.
-    //
-    // This keeps ::alloc/::read happy, because everything remains
-    // on a flat directory structure.
     Let ("sourcens",
         Exec (output: String,
             cmd: "xs",
@@ -48,65 +44,27 @@ Script([
     // Generate a vim script that loads the file and exports
     // the pretty HTML.
     //
-    Let ("tohtml.vim",
-        Exec (output: String,
-            cmd: "xs",
-            args: [
-                "-ah", "file", (var: "file"),
-                "-ah", "target_dir", (var: "artifact"),
-                "-c",
-                r###"
-                    Script([
-                        WriteFile("/dev/stdout", r##"edit dev_exec/"##),
-                        WriteFile("/dev/stdout", (var: "file")),
-                        WriteFile("/dev/stdout", r##"
-colorscheme apprentice
-set number
+    Exec (output: Display,
+        cmd: "xs",
+        args: [
+            "-ah", "file", (var: "file"),
+            "-ah", "source_dir", (var: "source_dir"),
+            "-ah", "target_dir", (var: "artifact"),
+            "-c",
+            r###"
+                Script([
+                    WriteFile("/dev/stdout", r##"edit "##),
+                    WriteFile("/dev/stdout", (var: "source_dir")),
+                    WriteFile("/dev/stdout", (var: "file")),
+                    WriteFile("/dev/stdout", r##"
 TOhtml
 wq! "##),
-                        WriteFile("/dev/stdout", (var: "target_dir")),
-                        WriteFile("/dev/stdout",
-                            r##".html
-qa!
+                    WriteFile("/dev/stdout", (var: "target_dir")),
+                    WriteFile("/dev/stdout",
+                        r##".html
 "##),
-                    ])
-                "###,
-           ]
-       )
-    ),
-    //WriteFile ("/dev/stderr", " +++++ ________ +++++ "),
-    //WriteFile ("/dev/stderr", (var: "tohtml.vim")),
-
-    // If vim -es and/or -e ever gets to work, this would be a more appropriate
-    // approach. But it's the same tomato.
-    Alias ("tohtml.vim",
-        Exec (output: Stream,
-            cmd: "xs",
-            args: [
-                "-ah", "vim", (var: "tohtml.vim"),
-                "-c",
-                r####"
-                    Script([
-                        WriteFile("/dev/stdout", (var: "vim")),
-                    ])
-                "####,
-            ]
-        )
-    ),
-    //WriteFile ("/dev/stderr", (source: "tohtml.vim")),
-
-    // Magic
-    Let ("output",
-        Exec (
-            cmd: "nvim",
-            args: [
-                "-n", // do not do swap files
-                "--headless", // do not start any UI
-                //"-V1", // print something
-                "-c", (var: "tohtml.vim"), // run these commands after loading init config
-            ],
-            //stdin: Source("tohtml.vim"), cwd: Some("."),
-        )
-    ),
-    WriteFile ("/dev/stderr", (bs: [10])),
+                ])
+            "###,
+       ]
+   )
 ])//Script

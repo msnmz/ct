@@ -1,0 +1,43 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([
+
+    Let ("script.xs",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "items", (var: "items"),
+                "-c",
+                r####"
+                    Script([
+                        WriteFile ("/dev/stdout",
+                            r###"
+                                Script([
+                                    Let ("items", Expr ("###),
+                        WriteFile ("/dev/stdout", (var: "items")),
+                        WriteFile ("/dev/stdout",
+                            r###")),
+                                    ForEach ("items",
+                                        List ([
+                                            WriteFile ("/dev/stdout", Each),
+                                            WriteFile ("/dev/stdout", (var: "sep")),
+                                        ])
+                                    ),
+                                ])
+                            "###),
+                    ])//Script
+                "####,
+            ]
+        )
+    ),
+    //WriteFile ("/dev/stderr", (var: "script.xs")),
+
+    Exec (output: Display,
+        cmd: "xs",
+        args: [
+            "-ah", "sep", (var: "sep"),
+            "-c", (var: "script.xs")
+        ]
+    ),
+
+])//Script
