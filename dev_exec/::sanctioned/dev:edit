@@ -15,28 +15,34 @@ Script([
         "####)
     ),
 
+    Let ("box.alpine", Expr ("vm.alpine4")),
+
     Exec (output: Display,
         cmd: "tmux",
         args: [
             "new-session", "-A",
                 "-n", "Edit",
                 "-s", "ct",
+                // .4
                 "xs", "-c", (var: "Edit-Script"),
             ";",
             "split-window", "-h",
                 "-t", "ct:Edit.0",
                 "-d",
+                // .5
                 "xs", "-f", "dev_exec/::sanctioned/dev:entr.loop",
             ";",
             "split-window", "-h", "-b",
                 "-t", "ct:Edit.0",
                 "-d",
+                // .0
                 "xs", "--error-server",
             ";",
             "split-window", "-v",
                 "-t", "ct:Edit.0",
-                "-l", "10",
+                "-l", "5",
                 "-d",
+                // .3
                 "xs", "-c", r####"Script([
                     Exec (output: Display,
                         cmd: "darkhttpd",
@@ -45,17 +51,52 @@ Script([
                     )
                 ])"####,
             ";",
+            "split-window", "-v",
+                "-t", "ct:Edit.0",
+                "-l", "8",
+                "-d",
+                // .2
+                "xs",
+                    "-ah", "box", (var: "box.alpine"),
+                    "-c", r####"Script([
+                        Exec (output: Display,
+                            cmd: "xs",
+                            args: [
+                                "-f", "dev_exec/::sanctioned/vagrant:ssh",
+                                "-ah", "box", (var: "box"),
+                            ],
+                        )
+                    ])"####,
+            ";",
+            "split-window", "-v",
+                "-t", "ct:Edit.0",
+                "-l", "8",
+                "-d",
+                // .1
+                "htop",
+            ";",
             "resize-pane",
                 "-t", "ct:Edit.0",
                 "-x", "23%",
             ";",
             "resize-pane",
-                "-t", "ct:Edit.3",
+                "-t", "ct:Edit.5",
                 "-x", "23%",
             ";",
             "set-option",
                 "-t", "ct:Edit.3",
                 "remain-on-exit", "on",
+            ";",
+            "bind-key",
+                "-T", "root",
+                "C-f",
+                    "send-key",
+                        "-t", "ct:Edit.3",
+                        "Space",
+            ";",
+            "send-keys",
+                "-t", "ct:Edit.2", // ssh vm.alpine
+                "htop", "Enter",
             ";",
         ],
     ),
