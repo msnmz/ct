@@ -1,2 +1,15 @@
-bind -M insert \cr 'tmux send-keys -t ct:Edit.2 Space'
-bind -M insert \ct 'tmux send-keys -t ct:Edit.2 q ; tmux respawn-pane -t ct:Edit.2'
+function ls
+  lsd $argv
+end
+
+function ll
+  ls -Al $argv
+end
+
+function lt
+  ls --tree $argv
+end
+
+function lsdd
+  ll -R $argv dev_exec/::sanctioned dev_exec/
+end
