@@ -58,7 +58,7 @@ Let ("item", AliasStmt("getarg")),
 Exec (output: Display,
     cmd: "xs",
     args: [
-        "-f", "dev_exec/::read",
+        "-f", "dev_exec/::sanctioned/::read",
         "-ah", "ns", (var: "ns"),
         "-ah", "itemns", (var: "itemns"),
         "-ah", "item", (var: "item"),

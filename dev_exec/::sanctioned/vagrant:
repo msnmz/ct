@@ -8,7 +8,7 @@ Script([// Lvl 0
 // It prints a JSON with relative generated file paths.
 // Store it in "paths".
 Let ("paths", Exec (output: String, cmd: "xs", args: ["-f",
-    "dev_exec/vagrant:config"
+    "dev_exec/::sanctioned/vagrant:config"
 ])),
 // Extract the Vagrantfile "dir" from "paths" with a simple
 // jq "$paths.dir".

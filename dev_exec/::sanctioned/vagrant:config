@@ -3,13 +3,13 @@
 Script([
 
 Let ("Vagrantfile.rb", Exec (output: String, cmd: "xs", args: ["-f",
-    "dev_exec/config::vagrant:Vagrantfile.rb"
+    "dev_exec/::sanctioned/config::vagrant:Vagrantfile.rb"
 ])),
 
 Exec (
     cmd: "xs",
     args: [
-        "-f", "dev_exec/::alloc",
+        "-f", "dev_exec/::sanctioned/::alloc",
         "-ah", "ns", "cache",
         "-ah", "itemns", "vagrant",
         "-ah", "item", "Vagrantfile.gen.rb",
@@ -20,7 +20,7 @@ Exec (
 Alias ("paths", Exec (output: Stream,
     cmd: "xs",
     args: [
-        "-f", "dev_exec/::alloc:paths",
+        "-f", "dev_exec/::sanctioned/::alloc:paths",
         "-ah", "query", ".",
         "-ah", "ns", "cache",
         "-ah", "itemns", "vagrant",

@@ -9,7 +9,7 @@ Let ("config",
     Exec (output: String,
         cmd: "xs",
         args: [
-            "-f", "dev_exec/config::packer"
+            "-f", "dev_exec/::sanctioned/config::packer"
         ]
     )
 ),
@@ -54,7 +54,7 @@ Let ("packer:build.pkr.json",
     Exec (output: String,
         cmd: "xs",
         args: [
-            "-f", "dev_exec/packer:build.pkr.json",
+            "-f", "dev_exec/::sanctioned/packer:build.pkr.json",
             "-ah", "select.source.jq", (var: "q-source"),
             "-ah", "select.recipe.jq", (var: "q-recipe"),
             "-ah", "select.postproc.jq", (var: "q-postproc"),
@@ -68,7 +68,7 @@ Let ("packer:build.pkr.json",
 Exec (output: Display,
     cmd: "xs",
     args: [
-        "-f", "dev_exec/::alloc",
+        "-f", "dev_exec/::sanctioned/::alloc",
         "-ah", "ns", "cache",
         "-ah", "itemns", "packer",
         "-ah", "item", "build.pkr.json",

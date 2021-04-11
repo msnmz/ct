@@ -5,11 +5,11 @@ Script([
 Exec (output: Display,
     cmd: "xs",
     args: [
-        "-f", "dev_exec/std::to_json",
+        "-f", "dev_exec/::sanctioned/std::to_json",
         "-ah", "val", [
             "vm.ubuntu0",
             "vm.alpine4",
-            "docker.alpine",
+            "vm.arch3",
         ],
     ],
 ),

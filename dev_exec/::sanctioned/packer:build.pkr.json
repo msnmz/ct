@@ -90,7 +90,6 @@ Let ("db.selector.jq",
                     WriteFile ("/dev/stdout", (var: "select.postproc.jq")),
                     WriteFile ("/dev/stdout", r###") as $postproc_selection"###),
 
-
                     WriteFile ("/dev/stdout", r###"| {$source_selection, $recipe_selection, $postproc_selection}"###),
                 ])
             "####
@@ -128,7 +127,7 @@ Let ("ssh_config.json",
     List([
         Alias("1", Exec (output: Stream,
             cmd: "xs",
-            args: ["-f", "dev_exec/::read",
+            args: ["-f", "dev_exec/::sanctioned/::read",
                 "-ah", "ns", "art",
                 "-ah", "itemns", "vagrant",
                 "-ah", "item", "ssh_config",
@@ -152,7 +151,7 @@ Alias ("art.paths",
     Exec (output: String,
         cmd: "xs",
         args: [
-            "-f", "dev_exec/::alloc:paths",
+            "-f", "dev_exec/::sanctioned/::alloc:paths",
             "-ah", "ns", "art",
             "-ah", "itemns", "packer",
             "-ah", "item", "manifest.json",
@@ -175,7 +174,11 @@ Exec (
 ),
 
 //
-// Generate the packer.build.pkr.json file from the database selection.
+// Generate the packer.build.pkr.json file from
+// - the packer database selection
+// - the manifest's paths in artifacts
+// - the JSONified ssh_config for the null builders
+// - the Vagrant database to join vagrant box builders
 //
 Exec (output: Display,
     cmd: "jq",
@@ -187,8 +190,10 @@ Exec (output: Display,
         "--argjson", "ssh_config", (var: "ssh_config.json"),
         r####"
 
+        # Simple rename/reimport
         ($mnfpaths.filepath) as $ARTIFACT_MANIFEST_PATH |
 
+        # ??
         def to_packer_source_vagrant:
             .value = {
                 communicator: "ssh",
@@ -196,6 +201,7 @@ Exec (output: Display,
             }
         ;
 
+        #
         def to_packer_source_null:. as { key: $name, value: { $source_vm } }
         |   ($source_vm // "vm.\($name)") as $source_vm
         |   ($ssh_config[] | select(.[0] == $source_vm)[1]) as $ssh_config
@@ -217,7 +223,7 @@ Exec (output: Display,
         ;
 
         def to_packer_source:.
-        |   . as { $vagrant } ?// { $null }
+        |   . as { $vagrant, $null }
         |   if $vagrant
             then (
                 .vagrant |= (to_entries | map(to_packer_source_vagrant) | from_entries)
@@ -243,11 +249,12 @@ Exec (output: Display,
 
         def to_packer_provisioner:.
         |   to_entries[]    # recipes
+        |   . as { $key }
         |   .value
         |   map("component/shell/\(.).sh")
         |   {
                 shell: [
-                    { scripts: . , name: "boba" }
+                    { scripts: . , name: $key }
                 ]
             }
         ;
@@ -258,7 +265,6 @@ Exec (output: Display,
                 source: $db.source_selection | to_packer_source,
                 build: [
                     {
-                        # TODO link to "build" in vagrant database, which links to everything else in here
                         name: "otomatik",
                         sources: [
                             $db.source_selection | to_packer_source_reference
@@ -269,6 +275,7 @@ Exec (output: Display,
                         "post-processor": {
                             manifest: [
                                 {
+                                    name: "ManiFest",
                                     output: $ARTIFACT_MANIFEST_PATH
                                 }
                             ]

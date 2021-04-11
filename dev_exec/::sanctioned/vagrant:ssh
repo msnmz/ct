@@ -6,7 +6,7 @@ Let ("ssh-config",
     Exec (output: String,
         cmd: "xs",
         args: [
-            "-f", "dev_exec/::alloc:paths",
+            "-f", "dev_exec/::sanctioned/::alloc:paths",
             "-ah", "ns", "art",
             "-ah", "itemns", "vagrant",
             "-ah", "item", "ssh_config",

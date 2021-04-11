@@ -3,11 +3,11 @@
 Script([
 
 Let ("names", Exec (output: String, cmd: "xs", args: ["-f",
-    "dev_exec/config::vagrant:enabled"
+    "dev_exec/::sanctioned/config::vagrant:enabled"
 ])),
 
 Alias ("Vagrantfile.rb", Exec (output: Stream, cmd: "xs", args: ["-f",
-    "dev_exec/vagrant:Vagrantfile.rb", "-ah",
+    "dev_exec/::sanctioned/vagrant:Vagrantfile.rb", "-ah",
     "names", (var: "names"),
 ])),
 

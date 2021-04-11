@@ -6,7 +6,7 @@ Let ("ssh-config",
     Exec (output: String,
         cmd: "xs",
         args: [
-            "-f", "dev_exec/vagrant:",
+            "-f", "dev_exec/::sanctioned/vagrant:",
             "-ah", "_", [
                 "ssh-config",
                 "--no-tty",
@@ -18,7 +18,7 @@ Let ("ssh-config",
 Exec (output: Display,
     cmd: "xs",
     args: [
-        "-f", "dev_exec/::alloc",
+        "-f", "dev_exec/::sanctioned/::alloc",
         "-ah", "ns", "art",
         "-ah", "itemns", "vagrant",
         "-ah", "item", "ssh_config",

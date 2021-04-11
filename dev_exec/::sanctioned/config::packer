@@ -12,6 +12,8 @@ WriteValue ("/dev/stdout",
                 .
                 |   ."null" |= {
                         "alpine-3",
+                        "arch-2",
+                        "ubuntu-1",
                     }
                 |   { "null" }
             "##
@@ -22,7 +24,9 @@ WriteValue ("/dev/stdout",
 
             r##"
                 .
-                |   { "boot_build.alpine" }
+                |   {
+                    "boot_build.alpine",
+                }
             "##
         ],
 
