@@ -25,11 +25,13 @@ then
   if test -d rust
   then
     git -C rust pull -s recursive -X theirs
-  else
+  elif false
     git clone https://github.com/rust-lang/rust.git rust
+  else
+    true
   fi
 
-  if true
+  if ! true
   then
     cd rust
     cp config.toml.example config.toml
