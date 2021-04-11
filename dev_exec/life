@@ -10,7 +10,7 @@ Let ("targets",
         ["-f", "dev_exec/::sanctioned/state::vagrant:export"],
         ["-f", "dev_exec/::sanctioned/packer:config"],
         ["-f", "dev_exec/::sanctioned/packer:", "-ah", "_", "[inspect]"],
-        //"dev_exec/packer:build:alpine.base.null",
+        ["-f", "dev_exec/::sanctioned/packer:", "-ah", "_", "[build]"],
     ])
 ),
 

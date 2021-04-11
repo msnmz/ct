@@ -211,6 +211,7 @@ Database (
         ),
         "vm.arch3": (
             os: "arch",
+            size: "large",
             network_allocation: "alloc-12",
             roles: [
                 "0/consul_agent/7",

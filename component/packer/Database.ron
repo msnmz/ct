@@ -31,10 +31,22 @@
             "ubuntu-2": ( source_vm: "vm.ubuntu" ),
         }
     ),
+    // These recipes run by default on all selected null
+    // builders, as defined by
+    // - enabled Vagrant VMs (config::vagrant:enabled),
+    // - respective entries in Vagrant SSH exports (state::vagrant:export),
+    // - VMs maps to Null Builders (packer/Database.ron),
+    // - selection of null builders (config::packer),
+    // - selection of recipes (config::packer).
+    //
+    // Builds of those selected elements can be **only** by restricted
+    // at runtime-config (-only/-exclude) per null-builder.
+    //
+    // For further flexibility we build upon on setting-1.
     recipe:
         {
-            "boot_build.alpine": [
-                "boot_build.alpine",
+            "otomatik": [
+                "vm::init",
             ]
         },
 )

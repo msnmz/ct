@@ -11,11 +11,6 @@ Script([
 
     Alias ("Build cargo workspace",
 
-        // Normally it's this, but hack-around to restrict compile-error lines
-        //Exec (output: Display,
-        //   cmd: "xs",
-        //   args: ["-f", "dev_exec/build"],
-        //),
         List([
             Let ("cargo-run.xs.sh",
 
@@ -55,9 +50,10 @@ Script([
         )
     ),
 
-    Alias ("Update packer configuration"    , Exec (cmd: "xs", args: ["-f", "dev_exec/::sanctioned/packer:config"]          , output: Display)),
-    Alias ("Validate packer configuration"  , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["validate"]]   , output: Display)),
-    Alias ("Inspect packer configuration"   , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["inspect"]]    , output: Display)),
+    Alias ("Update packer configuration"    , Exec (cmd: "xs", args: ["-f", "dev_exec/::sanctioned/packer:config"]                      , output: Display)),
+    Alias ("Validate packer configuration"  , Exec (cmd: "xs", args: ["-f", "dev_exec/::sanctioned/packer:", "-ah", "_", ["validate"]]  , output: Display)),
+    Alias ("Inspect packer configuration"   , Exec (cmd: "xs", args: ["-f", "dev_exec/::sanctioned/packer:", "-ah", "_", ["inspect"]]   , output: Display)),
+    Alias ("Build otomatik packer builds"   , Exec (cmd: "xs", args: ["-f", "dev_exec/::sanctioned/packer:", "-ah", "_", ["build"]]     , output: Display)),
     Alias ("Print the generated packer configuration",
         Exec (output: Display,
             cmd: "xs",
@@ -165,6 +161,7 @@ Script([
     //AliasStmt ("Validate packer configuration"),
     //AliasStmt ("Inspect packer configuration"),
     //AliasStmt ("Print the generated packer configuration"),
+    AliasStmt ("Build otomatik packer builds"),
 
     //AliasStmt ("Update cargo-build-tag"),
 

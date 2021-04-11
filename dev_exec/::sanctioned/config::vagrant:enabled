@@ -8,7 +8,7 @@ Exec (output: Display,
         "-f", "dev_exec/::sanctioned/std::to_json",
         "-ah", "val", [
             "vm.ubuntu0",
-            "vm.alpine4",
+            //"vm.alpine4",
             "vm.arch3",
         ],
     ],

@@ -254,7 +254,11 @@ Exec (output: Display,
         |   map("component/shell/\(.).sh")
         |   {
                 shell: [
-                    { scripts: . , name: $key }
+                    {
+                        name: $key,
+                        scripts: .,
+                        execute_command: "bash -e -u -o pipefail {{.Path}}",
+                    }
                 ]
             }
         ;
