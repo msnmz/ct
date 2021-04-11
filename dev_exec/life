@@ -1,33 +1,27 @@
 // vim: et ts=4 sw=4 ft=ron
-Script([
+Script([//-0
 
-Let ("target00",
-    Expr ("dev_exec/vagrant:box:update")
-),
 Let ("targets",
     Expr ([
-        //(var: "target00"), // pointless show-off
-        "dev_exec/vagrant:validate",
-        "dev_exec/state::vagrant:status",
-        "dev_exec/state::vagrant:up",
-        "dev_exec/state::vagrant:status",
-        "dev_exec/state::vagrant:export",
-        //"dev_exec/packer:config",
-        //"dev_exec/packer:import:null_builders",
-        //"dev_exec/packer:inspect",
+        ["-f", "dev_exec/::sanctioned/vagrant:", "-ah", "_", "[box, update]"],
+        ["-f", "dev_exec/::sanctioned/vagrant:", "-ah", "_", "[validate]"],
+        ["-f", "dev_exec/::sanctioned/state::vagrant:up"],
+        ["-f", "dev_exec/::sanctioned/vagrant:", "-ah", "_", "[status]"],
+        ["-f", "dev_exec/::sanctioned/state::vagrant:export"],
+        ["-f", "dev_exec/::sanctioned/packer:config"],
+        ["-f", "dev_exec/::sanctioned/packer:", "-ah", "_", "[inspect]"],
         //"dev_exec/packer:build:alpine.base.null",
     ])
 ),
 
 ForEach (
     "targets",
-    List([
-        Exec (output: Display,
-            cmd: "xs",
-            args: ["-f", Each],
-        ),
-    ])
+    Exec (output: Display,
+        cmd: "xs",
+        args: [
+            "-f", "dev_exec/::sanctioned/std::xs",
+            "-ah", "_", Each,
+        ],
+    )
 ),
-
-
-])//Script
+])//Script-0
