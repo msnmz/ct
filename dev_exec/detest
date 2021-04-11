@@ -48,13 +48,6 @@ Script([
         ])
     ),
 
-    Alias ("Dev-loop meta::sanctioned",
-        Exec (output: Display,
-            cmd: "xs",
-            args: ["-f", "dev_exec/meta::sanctioned"],
-        ),
-    ),
-
     Alias (r#"The "life" sequence"#,
         Exec (output: Display,
             cmd: "xs",
@@ -62,14 +55,14 @@ Script([
         )
     ),
 
-    Alias ("Update packer configuration"    , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:config"]                       , output: Display)),
+    Alias ("Update packer configuration"    , Exec (cmd: "xs", args: ["-f", "dev_exec/::sanctioned/packer:config"]          , output: Display)),
     Alias ("Validate packer configuration"  , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["validate"]]   , output: Display)),
     Alias ("Inspect packer configuration"   , Exec (cmd: "xs", args: ["-f", "dev_exec/packer:", "-ah", "_", ["inspect"]]    , output: Display)),
     Alias ("Print the generated packer configuration",
         Exec (output: Display,
             cmd: "xs",
             args: [
-                "-f", "dev_exec/::read2",
+                "-f", "dev_exec/::sanctioned/::read2",
                 "-ah", "_", r####"
                     ns: cache
                     itemns: packer
@@ -140,28 +133,46 @@ Script([
         ),
     ),
 
+    Alias ("std::join 1 2 3",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/std::join",
+                "-ah", "items", r#"["one", "two", "three"]"#,
+                "-ah", "sep", "/"
+            ]
+        )
+    ),
+
+    Alias ("Install the local binaries (.local/bin.edge)",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/local:install_local_bin",
+            ],
+        )
+    ),
+
     AliasStmt ("Clear xs error server terminal"),
+    AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
+
     //AliasStmt ("Build cargo workspace"),
 
-    //AliasStmt ("Dev-loop meta::sanctioned"),
 
     //AliasStmt (r#"The "life" sequence"#),
 
-    //AliasStmt ("Update packer configuration"),
+    AliasStmt ("Update packer configuration"),
     //AliasStmt ("Validate packer configuration"),
     //AliasStmt ("Inspect packer configuration"),
+    //AliasStmt ("Print the generated packer configuration"),
 
     //AliasStmt ("Update cargo-build-tag"),
 
     //AliasStmt ("Run the cargo-cache-dir query"),
 
-    AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
-
     //AliasStmt ("Run a random translation with DeepL.com"),
 
     //AliasStmt ("git ls-files"),
-
-    //AliasStmt ("Print the generated packer configuration"),
 
     //AliasStmt ("Print the time and date"),
 
@@ -170,12 +181,6 @@ Script([
     //AliasStmt ("Create colourful html of dev_exec/"),
     //WriteFile ("/dev/stderr", (bs:[10,10])),
 
-    Exec (output: Display,
-        cmd: "xs",
-        args: [
-            "-f", "dev_exec/::sanctioned/std::join",
-            "-ah", "items", r#"["one", "two", "three"]"#,
-            "-ah", "sep", "/"
-        ]
-    ),
+    //AliasStmt ("Install the local binaries (.local/bin.edge)"),
+    AliasStmt ("std::join 1 2 3"),
 ])//Script
