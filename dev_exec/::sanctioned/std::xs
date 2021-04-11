@@ -1,0 +1,51 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=4 sw=4 ft=ron
+Script([//-0
+    Let ("args",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "_", (var: "_"),
+                "-f", "dev_exec/::sanctioned/std::yaml_to_json",
+            ],
+        )
+    ),
+
+    // Script-1 writes Script-2 to script.xs
+    // script.xs runs xs with the YAML arguments given to (var: "args")
+    Let ("script.xs",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "args", (var: "args"),
+                "-c",
+                r####"
+                    Script([//-1
+                        WriteFile ("/dev/stdout",
+                            r###"
+                                Script([//-2
+                                    Exec (output: Display,
+                                        cmd: "xs",
+                                        args: "###),
+                        //-1
+                        WriteFile ("/dev/stdout", (var: "args")),
+                        WriteFile ("/dev/stdout",
+                            r###",
+                                    //-2
+                                    ),
+                                ])//Script-2
+                            "###
+                        ),
+                        //-1
+                    ])//Script-1
+                "####,
+            ],
+        )
+    ),
+    //WriteFile ("/dev/stderr", (var: "script.xs")),
+
+    Exec (output: Display,
+        cmd: "xs",
+        args: ["-c", (var: "script.xs")],
+    ),
+])//Script-0
