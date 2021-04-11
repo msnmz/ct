@@ -123,17 +123,20 @@ CDI::user_paths:add() {
   extra_path="$1"; shift;
   echo 'export PATH="'"$extra_path"':$PATH"' >> ~/.user_paths
 }
+CDI::user_init:add.eval() {
+  hook="$1"; shift;
+  echo 'eval "'"$hook"'"' >> ~/.user_init
+}
 
 CDI_install_rbenv() {
   gh:init "rbenv/rbenv" "$HOME/.rbenv"
   cd ~/.rbenv && src/configure && make -C src
+
   CDI::user_paths:add "$HOME/.rbenv/bin"
+  CDI::user_init:add.eval '$(rbenv init -)'
+
   source "$HOME/.user_paths"
-  eval "$(rbenv init -)"
-  echo 'eval "$(rbenv init -)"' \
-    | tee -a "$HOME/.bash_profile" \
-    | tee -a "$HOME/.bashrc" \
-    >/dev/null
+  source "$HOME/.user_init"
 
   CDI_install_rbenv_build
   curl -fsSL "https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-doctor" | bash
