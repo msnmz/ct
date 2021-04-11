@@ -25,7 +25,8 @@ WriteValue ("/dev/stdout",
             r##"
                 .
                 |   {
-                    "otomatik",
+                    # "otomatik",
+                    # "rb3",
                 }
             "##
         ],

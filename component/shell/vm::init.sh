@@ -17,6 +17,10 @@ PACMAN_AUR_NEEDS=(
 )
 PACMAN_MIRROR_UTIL=rate-arch-mirrors  # AUR
 UBUNTU_MIRROR_UTIL=apt-smart          # pip3
+RUBY_DEPS_DEB=(
+  zlib1g-dev
+  libssl-dev
+)
 
 git:init() {
   source="$1"; shift;
@@ -104,10 +108,15 @@ linux.distro() {
 CDI_install_base_devel() {
   case "$( linux.distro )" in
     (Ubuntu)
-      apt:install "${COMMON_PACKAGES[@]}" "${DEBIAN_APT_NEEDS[@]}"
+      apt:install \
+	"${COMMON_PACKAGES[@]}" \
+	"${DEBIAN_APT_NEEDS[@]}" \
+	"${RUBY_DEPS_DEB[@]}" \
       ;;
     (Arch)
-      pacman:install "${COMMON_PACKAGES[@]}" "${PACMAN_AUR_NEEDS}"
+      pacman:install \
+	"${COMMON_PACKAGES[@]}" \
+	"${PACMAN_AUR_NEEDS}" \
       ;;
   esac
 }
