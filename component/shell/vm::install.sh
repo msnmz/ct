@@ -41,6 +41,11 @@ BREW_PACKAGES=(
   ccache
   zlib
   # libressl
+  lsd
+  jq
+  direnv
+  pv
+  curl
 )
 
 git:init() {
