@@ -186,9 +186,13 @@ mode::homebrew:install() {
   CDI::user_init:add.eval '$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)'
 }
 
+brew::install:post() {
+  CDI::user_init:load
+  brew install gcc fish
+}
+
 mode::rbenv:install-3.0.1() {
   CDI::user_init:load
-
   rbenv install 3.0.1
 }
 
@@ -198,5 +202,5 @@ case "$mode" in
   init) mode::init;;
   homebrew:install) mode::homebrew:install;;
   rbenv:install-3.0.1) mode::rbenv:install-3.0.1;;
-  #__no_mode) echo hello;;
+  __no_mode) brew::install:post;;
 esac
