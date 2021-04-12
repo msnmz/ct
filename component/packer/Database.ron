@@ -46,13 +46,7 @@
     recipe:
         {
             "otomatik": [
-                "vm::init",
-            ],
-            "rb3": [
-                "rbenv:install-3.0.1",
-            ],
-            "homebrew"; [
-                "homebrew:install",
+                "vm::install",
             ],
         },
 )

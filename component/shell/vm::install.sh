@@ -8,6 +8,7 @@ COMMON_PACKAGES=(
   make
 )
 DEBIAN_APT_NEEDS=(
+  build-essential
   apt-utils
   dialog
 )
@@ -136,6 +137,10 @@ CDI::user_init:add.eval() {
   hook="$1"; shift;
   echo 'eval "'"$hook"'"' >> ~/.user_init
 }
+CDI::user_init:load() {
+  source $HOME/.user_paths
+  source $HOME/.user_init
+}
 
 CDI_install_rbenv() {
   gh:init "rbenv/rbenv" "$HOME/.rbenv"
@@ -166,18 +171,32 @@ CDI_install_ccache_to_user_paths() {
   esac
 }
 
-CDI_install_base_devel
-CDI_install_rbenv
-CDI_install_ccache_to_user_paths
+mode::init() {
+  CDI_install_base_devel
+  CDI_install_rbenv
+  CDI_install_ccache_to_user_paths
+}
 
-# Diagnose
-if false
-then
-  source "$HOME/.user_paths"
-  eval "$(rbenv init -)"
+mode::homebrew:install() {
+  CDI::user_init:load
 
-  which gcc
-  which ccache
+  curl -fsSL "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" >homebrew:install.sh
+  bash homebrew:install.sh
+
+  CDI::user_init:add.eval '$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)'
+}
+
+mode::rbenv:install-3.0.1() {
+  CDI::user_init:load
 
   rbenv install 3.0.1
-fi
+}
+
+mode="${1:-__no_mode}"
+# echo '* The mode: '"$mode"
+case "$mode" in
+  init) mode::init;;
+  homebrew:install) mode::homebrew:install;;
+  rbenv:install-3.0.1) mode::rbenv:install-3.0.1;;
+  #__no_mode) echo hello;;
+esac
