@@ -18,6 +18,7 @@ Script([
     Let ("box.arch", Expr ("vm.arch3")),
     Let ("box.ubuntu", Expr ("vm.ubuntu0")),
     Let ("htop_height", Expr ("10")),
+    Let ("htop_extra_height", Expr ("14")),
 
     Exec (output: Display,
         cmd: "tmux",
@@ -89,7 +90,7 @@ Script([
             ";",
             "split-window", "-v",
                 "-t", "ct:Edit.0",
-                "-l", (var: "htop_height"),
+                "-l", (var: "htop_extra_height"),
                 "-d",
                 // .1
                 "htop",
