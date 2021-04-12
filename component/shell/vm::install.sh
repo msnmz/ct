@@ -30,7 +30,7 @@ BREW_PACKAGES=(
   make
   ccache
   zlib
-  libressl
+  # libressl
 )
 
 git:init() {
@@ -87,6 +87,9 @@ pacman:install() {
 apt:install() {
   sudo env DEBIAN_FRONTEND=noninteractive apt-get update -y
   sudo env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get install "$@" -y
+}
+apt:install.delayed() {
   sudo env DEBIAN_FRONTEND=noninteractive apt-get install "$@" -y
 }
 
@@ -206,15 +209,32 @@ brew:() {
   brew "$@"
 }
 
+xfce4::install() {
+  case "$( linux.distro )" in
+    Ubuntu)
+      apt:install.delayed xfce4
+      ;;
+    Arch)
+      pacman:install xfce4 xorg-xinit
+      ;;
+  esac
+}
+
 # ENABLE_INIT=1
 # ENABLE_RBENV=1
 # ENABLE_HOMEBREW=1
-ENABLE_HOMEBREW_PACKAGES=1
+# ENABLE_HOMEBREW_PACKAGES=1
+# ENABLE_RUST=1
+# ENABLE_BSHRC=1
+ENABLE_XFCE=1
 
   echo INIT "${ENABLE_INIT+x}"
   echo RBENV "${ENABLE_RBENV+x}"
   echo HMBRE "${ENABLE_HOMEBREW+x}"
   echo HMBPK "${ENABLE_HOMEBRW_PACKAGES+x}"
+  echo RUST "${ENABLE_RUST+x}"
+  echo BSHRC "${ENABLE_BSHRC+x}"
+  echo XFCE "${ENABLE_XFCE+x}"
 
 if test \
   "${ENABLE_INIT+x}" = "x" -o \
@@ -246,6 +266,33 @@ if test \
 then
   echo HMBRW PKGS
   brew: install "${BREW_PACKAGES[@]}"
+fi
+
+if test \
+  "${ENABLE_RUST+x}" = "x" -o \
+  0 = 1
+then
+  echo RUST
+  brew: install rustup-init
+  rustup-init -y
+  CDI::user_init:add.eval 'source $HOME/.cargo/env'
+fi
+
+if test \
+  "${ENABLE_BSHRC+x}" = "x" -o \
+  0 = 1
+then
+  echo BSHRC
+  echo 'source $HOME/.user_paths' >> $HOME/.bashrc
+  echo 'source $HOME/.user_init' >> $HOME/.bashrc
+fi
+
+if test \
+  "${ENABLE_XFCE+x}" = "x" -o \
+  0 = 1
+then
+  echo "XFCE (4)"
+  xfce4::install
 fi
 
 echo "*] Just chillin'"

@@ -12,7 +12,7 @@ WriteValue ("/dev/stdout",
                 .
                 |   ."null" |= {
                         # "alpine-3",
-                        # "arch-2",
+                        "arch-2",
                         "ubuntu-1",
                     }
                 |   .vagrant |= {
