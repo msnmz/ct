@@ -4,7 +4,7 @@ Script([
 Exec (output: Display,
     cmd: "xs",
     args: [
-        "-f", "dev_exec/vagrant:",
+        "-f", "dev_exec/::sanctioned/vagrant:",
         "-ah", "_", [
             "status",
             "--color",

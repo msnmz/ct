@@ -188,7 +188,7 @@ mode::homebrew:install() {
 
 brew::install:post() {
   CDI::user_init:load
-  brew install gcc fish
+  brew install --quiet gcc fish
 }
 
 mode::rbenv:install-3.0.1() {
@@ -196,11 +196,33 @@ mode::rbenv:install-3.0.1() {
   rbenv install 3.0.1
 }
 
-mode="${1:-__no_mode}"
-# echo '* The mode: '"$mode"
-case "$mode" in
-  init) mode::init;;
-  homebrew:install) mode::homebrew:install;;
-  rbenv:install-3.0.1) mode::rbenv:install-3.0.1;;
-  __no_mode) brew::install:post;;
-esac
+# ENABLE_INIT=1
+# ENABLE_RBENV=1
+ENABLE_HOMEBREW=1
+
+if test \
+  "${ENABLE_INIT+x}" = "x" -o \
+  "${ENABLE_RBENV+x}" = "x" -o \
+  "${ENABLE_HOMEBREW+x}" = "x" -o \
+  false
+then
+  mode::init
+fi
+
+if test \
+  "${ENABLE_RBENV+x}" = "x" -o \
+  "${ENABLE_HOMEBREW+x}" = "x" -o \
+  false
+then
+  mode::rbenv:install-3.0.1
+fi
+
+if test \
+  "${ENABLE_HOMEBREW+x}" = "x" -o \
+  false
+then
+  mode::homebrew:install
+
+fi
+
+echo "*] Just chillin'"

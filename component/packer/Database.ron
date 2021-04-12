@@ -1,16 +1,20 @@
 (
     source: (
         vagrant: {
-            "alpine-base": (
+            "alpine-boot": (
                 box_os: "alpine", // get from vagrant
-                box_name: "gvz/alpine.base",
+                box_name: "gvz/alpine.boot",
             ),
-            "ubuntu-base": (
+            "ubuntu-boot": (
                 box_os: "ubuntu",
-                box_name: "gvz/ubuntu.base",
+                box_name: "gvz/ubuntu.boot",
+            ),
+            "arch-boot": (
+                box_os: "arch",
+                box_name: "gvz/arch.boot",
             ),
             "alpine-rustup": (
-                source_path: "${var.LocalVagrantArtifacts}/gvz/alpine.base",
+                source_path: "${var.LocalVagrantArtifacts}/gvz/alpine.boot",
                 box_name: "gvz/alpine.rustup",
             ),
         },
