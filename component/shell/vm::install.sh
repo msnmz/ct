@@ -22,6 +22,16 @@ RUBY_DEPS_DEB=(
   zlib1g-dev
   libssl-dev
 )
+BREW_PACKAGES=(
+  gcc
+  fish
+  tmux
+  htop
+  make
+  ccache
+  zlib
+  libressl
+)
 
 git:init() {
   source="$1"; shift;
@@ -186,43 +196,56 @@ mode::homebrew:install() {
   CDI::user_init:add.eval '$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)'
 }
 
-brew::install:post() {
-  CDI::user_init:load
-  brew install --quiet gcc fish
-}
-
 mode::rbenv:install-3.0.1() {
   CDI::user_init:load
   rbenv install 3.0.1
 }
 
+brew:() {
+  CDI::user_init:load
+  brew "$@"
+}
+
 # ENABLE_INIT=1
 # ENABLE_RBENV=1
-ENABLE_HOMEBREW=1
+# ENABLE_HOMEBREW=1
+ENABLE_HOMEBREW_PACKAGES=1
+
+  echo INIT "${ENABLE_INIT+x}"
+  echo RBENV "${ENABLE_RBENV+x}"
+  echo HMBRE "${ENABLE_HOMEBREW+x}"
+  echo HMBPK "${ENABLE_HOMEBRW_PACKAGES+x}"
 
 if test \
   "${ENABLE_INIT+x}" = "x" -o \
-  "${ENABLE_RBENV+x}" = "x" -o \
-  "${ENABLE_HOMEBREW+x}" = "x" -o \
-  false
+  0 = 1
 then
+  echo INIT
   mode::init
 fi
 
 if test \
   "${ENABLE_RBENV+x}" = "x" -o \
-  "${ENABLE_HOMEBREW+x}" = "x" -o \
-  false
+  0 = 1
 then
+  echo RBENV
   mode::rbenv:install-3.0.1
 fi
 
 if test \
   "${ENABLE_HOMEBREW+x}" = "x" -o \
-  false
+  0 = 1
 then
+  echo HMBRW
   mode::homebrew:install
+fi
 
+if test \
+  "${ENABLE_HOMEBREW_PACKAGES+x}" = "x" -o \
+  0 = 1
+then
+  echo HMBRW PKGS
+  brew: install "${BREW_PACKAGES[@]}"
 fi
 
 echo "*] Just chillin'"
