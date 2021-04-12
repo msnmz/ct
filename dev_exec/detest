@@ -149,19 +149,43 @@ Script([
         )
     ),
 
+    Alias ("Regenerate Vagrantfile",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/vagrant:config",
+            ]
+        )
+    ),
+    Alias ("Print the generated Vagrantfile",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/::read2",
+                "-ah", "_", r####"
+                    ns: cache
+                    itemns: vagrant
+                    item: Vagrantfile.gen.rb
+                "####
+            ]
+        )
+    ),
+
     AliasStmt ("Clear xs error server terminal"),
     AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
 
     //AliasStmt ("Build cargo workspace"),
 
+    AliasStmt ("Regenerate Vagrantfile"),
+    AliasStmt ("Print the generated Vagrantfile"),
 
     //AliasStmt (r#"The "life" sequence"#),
 
-    AliasStmt ("Update packer configuration"),
+    //AliasStmt ("Update packer configuration"),
     //AliasStmt ("Validate packer configuration"),
     //AliasStmt ("Inspect packer configuration"),
     //AliasStmt ("Print the generated packer configuration"),
-    AliasStmt ("Build otomatik packer builds"),
+    //AliasStmt ("Build otomatik packer builds"),
 
     //AliasStmt ("Update cargo-build-tag"),
 

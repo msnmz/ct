@@ -43,7 +43,8 @@ Let ("Preprocess with box names (JQ)", Expr (r####"
     | (
         if $instance.provider == "vagrant_vbox"
         then
-            $size[$instance.provider]
+            $size[$instance.provider] + {
+            }
         else if $instance.provider == "vagrant_docker"
         then
             $os
@@ -52,6 +53,26 @@ Let ("Preprocess with box names (JQ)", Expr (r####"
         end end
         | to_entries
     )                                               as $provider_attr
+
+    | (
+        if $instance.provider == "vagrant_vbox"
+        then
+            [
+                "['modifyvm', :id, '--graphicscontroller', 'vmsvga']",
+                "['modifyvm', :id, '--accelerate3d', 'on']",
+                "['modifyvm', :id, '--audio', 'none']",
+                "['modifyvm', :id, '--clipboard-mode', 'disabled']",
+                "['modifyvm', :id, '--draganddrop', 'disabled']",
+                "['modifyvm', :id, '--vrde', 'off']",
+                "['modifyvm', :id, '--teleporter', 'off']",
+                "['modifyvm', :id, '--tracing-enabled', 'off']",
+                "['modifyvm', :id, '--usbcardreader', 'off']",
+                "['modifyvm', :id, '--recording', 'off']"
+            ]
+        else
+            []
+        end
+    )                                               as $provider_customize
 
     # Theoretically docker boxes on vagrant don't need a "box" declaration,
     # but there is an error(?) about box missing, so we inject a krap value.
@@ -66,6 +87,7 @@ Let ("Preprocess with box names (JQ)", Expr (r####"
         $net_alloc,
         $os,
         $provider_attr,
+        $provider_customize,
         $provider_type,
         #$size,
         $vm_name,
@@ -83,6 +105,9 @@ Let ("Box entries to Vagrantfile.rb entries (JQ)", Expr (r####"
 
     (       .provider_attr[] |
             "      provider.\(.key) = \(.value | @json)"
+    ),
+    (       .provider_customize[] |
+            "      provider.customize \(.)"
     ),
     @json   "    end",
             "  end"
