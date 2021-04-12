@@ -7,6 +7,7 @@
 # ENABLE_RUST=1
 # ENABLE_BSHRC=1
 # ENABLE_XFCE=1
+ENABLE_XS=1
 
 
 COMMON_PACKAGES=(
@@ -236,6 +237,7 @@ xfce4::install() {
   echo RUST "${ENABLE_RUST+x}"
   echo BSHRC "${ENABLE_BSHRC+x}"
   echo XFCE "${ENABLE_XFCE+x}"
+  echo XS XC "${ENABLE_XS+x}"
 
 if test \
   "${ENABLE_INIT+x}" = "x" -o \
@@ -294,6 +296,17 @@ if test \
 then
   echo "XFCE (4)"
   xfce4::install
+fi
+
+if test \
+  "${ENABLE_XS+x}" = "x" -o \
+  0 = 1
+then
+  echo "XS - XC"
+  brew: install --HEAD \
+    Good-Vibez/tap/xs \
+    Good-Vibez/tap/xc \
+  ;
 fi
 
 echo "*] Just chillin'"
