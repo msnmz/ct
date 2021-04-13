@@ -1,0 +1,137 @@
+#!/usr/local/bin/xs -f
+// vim: et ts=3 sw=4 ft=ron
+Script([
+
+    Let ("ssh-config",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/::alloc:paths",
+                "-ah", "ns", "art",
+                "-ah", "itemns", "vagrant",
+                "-ah", "item", "ssh_config",
+                "-ah", "query", ".filepath",
+            ],
+        )
+    ),
+
+    Let ("vms",
+        Exec (output: String,
+            cmd: "xs",
+            args: ["-f", "dev_exec/::sanctioned/config::vagrant:enabled"],
+        )
+    ),
+
+    Let ("script-1.xs",
+        Exec (output: String,
+            cmd: "xs",
+            args: [
+                "-ah", "vms", (var: "vms"),
+                "-c",
+                r#####"
+                    Script([//-1
+                        WriteFile("/dev/stdout",
+                            r####"
+                                Script([//-2
+                                    Let ("vms", Expr(
+                            "####
+                        ),
+                        WriteFile("/dev/stdout", (var: "vms")),
+                        WriteFile("/dev/stdout",
+                            r####")),
+                                    ForEach ("vms",
+                                        Exec (output: Display,
+                                            cmd: "xs",
+                                            args: [
+                                                "-ah", "vm", Each,
+                                                "-ah", "ssh-config", (var: "ssh-config"),
+                                                "-c",
+                                                r###"
+                                                    Script([//-3
+                                                        Alias ("be xs.bash",
+                                                            Exec (output: Stream,
+                                                                cmd: "xs",
+                                                                args: [
+                                                                    "-c",
+                                                                    r##"
+                                                                        Script([//-4
+                                                                            WriteFile ("/dev/stdout",
+                                                                                r#"
+                                                                                    Script([//-5
+                                                                                        Alias ("home",
+                                                                                            Exec (output: Stream,
+                                                                                                cmd: "printenv",
+                                                                                                args: ["HOME"],
+                                                                                            )
+                                                                                        ),
+                                                                                        Exec (output: Display,
+                                                                                            cmd: "head",
+                                                                                            args: ["-c", "-1"],
+                                                                                            stdin: Source("home"), cwd: Some("."),
+                                                                                        ),
+                                                                                    ])//Script-5
+                                                                                "#
+                                                                            ),
+                                                                        ])//Script-4
+                                                                    "##,
+                                                                ],
+                                                            )
+                                                        ),
+                                                        Let ("home",
+                                                            Exec (output: String,
+                                                                cmd: "ssh",
+                                                                stdin: Source("be xs.bash"), cwd: Some("."),
+                                                                args: [
+                                                                    "-F", (var: "ssh-config"),
+                                                                    (var: "vm"),
+                                                                    "--",
+                                                                    "/home/linuxbrew/.linuxbrew/bin/xs",
+                                                                ],
+                                                            )
+                                                        ),
+                                                        Alias ("tar",
+                                                            Exec (output: Stream,
+                                                                cmd: "ssh",
+                                                                args: [
+                                                                    "-F", (var: "ssh-config"),
+                                                                    (var: "vm"),
+                                                                    "--",
+                                                                    "tar", "-C", (var: "home"), "-c", ".",
+                                                                ]
+                                                            )
+                                                        ),
+                                                        Alias ("pv",
+                                                            Exec (output: Stream,
+                                                                cmd: "pv",
+                                                                args: ["--progress"],
+                                                                stdin: Source("tar"), cwd: Some("."),
+                                                            )
+                                                        ),
+                                                        Exec (output: Display,
+                                                            cmd: "wc",
+                                                            args: ["-c"],
+                                                            stdin: Source("tar"), cwd: Some("."),
+                                                        ),
+                                                    ])//Script-3
+                                                "###
+                                            ]
+                                        )
+                                    ),
+                                ])//Script-2
+                            "####
+                        ),
+                    ])//Script-1
+                "#####
+            ]
+        )
+    ),
+
+    Exec (output: Display,
+        cmd: "xs",
+        args: [
+            "-ah", "ssh-config", (var: "ssh-config"),
+            "-c",
+            (var: "script-1.xs")
+        ],
+    )
+])//Script

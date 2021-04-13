@@ -170,12 +170,21 @@ Script([
             ]
         )
     ),
+    Alias ("Cache VMs",
+        Exec(output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/vagrant::cache:vms",
+            ],
+        )
+    ),
 
     AliasStmt ("Clear xs error server terminal"),
     AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
 
     //AliasStmt ("Build cargo workspace"),
 
+    AliasStmt ("Cache VMs"),
     AliasStmt ("Regenerate Vagrantfile"),
     AliasStmt ("Print the generated Vagrantfile"),
 

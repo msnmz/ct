@@ -52,8 +52,8 @@ git:init() {
   source="$1"; shift;
   target="$1"; shift;
 
-	if test -d $target
-	then
+  if test -d $target
+  then
     git -C $target remote update --prune
   else
     git clone --depth 1 $source $target
