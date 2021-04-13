@@ -178,15 +178,23 @@ Script([
             ],
         )
     ),
+    Alias ("List all used executables",
+        Exec (output: Display,
+            cmd: "xs",
+            args: [
+                "-f", "dev_exec/::sanctioned/meta::list:Exec.cmd",
+            ],
+        )
+    ),
 
     AliasStmt ("Clear xs error server terminal"),
     AliasStmt (r#"Check if sanctioned topics remain sanctioned"#),
 
     //AliasStmt ("Build cargo workspace"),
 
-    AliasStmt ("Cache VMs"),
-    AliasStmt ("Regenerate Vagrantfile"),
-    AliasStmt ("Print the generated Vagrantfile"),
+    //AliasStmt ("Cache VMs"),
+    //AliasStmt ("Regenerate Vagrantfile"),
+    //AliasStmt ("Print the generated Vagrantfile"),
 
     //AliasStmt (r#"The "life" sequence"#),
 
@@ -212,5 +220,7 @@ Script([
     //WriteFile ("/dev/stderr", (bs:[10,10])),
 
     //AliasStmt ("Install the local binaries (.local/bin.edge)"),
+
+    AliasStmt ("List all used executables"),
     AliasStmt ("std::join 1 2 3"),
 ])//Script

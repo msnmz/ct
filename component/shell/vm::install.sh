@@ -33,19 +33,25 @@ RUBY_DEPS_DEB=(
   libssl-dev
 )
 BREW_PACKAGES=(
+  # System and gnu
   gcc
-  fish
-  tmux
-  htop
   make
   ccache
   zlib
+  curl
+  findutils
+  grep
+  gnu-sed
   # libressl
+  fish
+  tmux
+  htop
   lsd
   jq
   direnv
   pv
-  curl
+  nvim
+  git
 )
 
 git:init() {
