@@ -1,14 +1,29 @@
 # vim: et ts=2 sw=2 ft=bash
 
-ENABLE_INIT=1
-ENABLE_RBENV=1
-ENABLE_HOMEBREW=1
-ENABLE_HOMEBREW_PACKAGES=1
-ENABLE_RUST=1
-ENABLE_BSHRC=1
-ENABLE_XFCE=1
-ENABLE_XS=1
-
+main() {
+  ui::doing "BASE"
+  CDI::install:base_devel
+  ui::doing "RBENV"
+  CDI::install:rbenv
+  CDI::install:user_paths.ccache
+  ui::doing "HMBRW"
+  CDI::user_init:load
+  CDI::install:homebrew
+  ui::doing "HMBRW_PKGS"
+  brew:install "${BREW_PACKAGES[@]}"
+  config::fish
+  config::bash
+  ui::doing "OMF"
+  CDI::install:omf
+  ui::doing "CARGO"
+  CDI::install:cargo
+  CDI::user_init:load
+  ui::doing "XFCE4"
+  UDI::install:xfce4
+  ui::doing "CT"
+  CDI::install:ct
+echo "*] Just chillin'"
+}
 
 COMMON_PACKAGES=(
   ccache
@@ -58,6 +73,77 @@ BREW_PACKAGES=(
   lsd
 )
 
+ui::doing() {
+  printf '==> %s\n' "$1"
+}
+
+config::apt:sources() {
+  ui::doing "Instal ubuntu apt sources"
+  sudo tee /etc/apt/sources.list >/dev/null <<-'EOS'
+    deb http://mirror.eu.kamatera.com/ubuntu focal main restricted
+    deb http://mirror.eu.kamatera.com/ubuntu focal-updates main restricted
+    deb http://mirror.eu.kamatera.com/ubuntu focal universe
+    deb http://mirror.eu.kamatera.com/ubuntu focal-updates universe
+    deb http://mirror.eu.kamatera.com/ubuntu focal multiverse
+    deb http://mirror.eu.kamatera.com/ubuntu focal-updates multiverse
+    deb http://mirror.eu.kamatera.com/ubuntu focal-backports main restricted universe multiverse
+    deb http://security.ubuntu.com/ubuntu focal-security main restricted
+    deb http://security.ubuntu.com/ubuntu focal-security universe
+    deb http://security.ubuntu.com/ubuntu focal-security multiverse
+EOS
+}
+config::pacman:mirrorlist() {
+  ui::doing "Instal arch pacman mirrorlist"
+  sudo tee /etc/pacman.d/mirrorlist >/dev/null <<-'EOS'
+    Server = https://archlinux.koyanet.lv/archlinux/$repo/os/$arch
+    Server = http://mirror.puzzle.ch/archlinux/$repo/os/$arch
+    Server = http://mirror.datacenter.by/pub/archlinux/$repo/os/$arch
+    Server = https://archlinux.uk.mirror.allworldit.com/archlinux/$repo/os/$arch
+    Server = http://mirror.easylee.nl/archlinux/$repo/os/$arch
+EOS
+}
+config::fish() {
+  tee ~/.config/fish/conf.d/osx_gnu.fish >/dev/null <<-'EOS'
+  if test (uname -s) = "Darwin"
+    set -gx PATH /usr/local/opt/coreutils/libexec/gnubin $PATH
+    set -gx PATH /usr/local/opt/gnu-sed/libexec/gnubin $PATH
+  end
+EOS
+  tee ~/.config/fish/conf.d/vi.fish >/dev/null <<-'EOS'
+  set -U fish_key_bindings fish_vi_key_bindings
+EOS
+}
+config::bash() {
+  echo 'source $HOME/.user_paths' >> $HOME/.bashrc
+  echo 'source $HOME/.user_init' >> $HOME/.bashrc
+}
+
+pacman:install() {
+  sudo pacman -Syu --noconfirm --needed "$@"
+}
+
+apt:install() {
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get update -y
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get install "$@" -y
+}
+
+apt:install.delayed() {
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get install "$@" -y
+}
+
+aur:install() {
+  local name="$1"; shift;
+
+  curl https://aur.archlinux.org/cgit/aur.git/snapshot/$name.tar.gz >$name.tar.gz
+
+  tar xvf $name.tar.gz
+  cd $name
+
+  makepkg -sic --noconfirm
+}
+
+
 git:init() {
   source="$1"; shift;
   target="$1"; shift;
@@ -78,62 +164,7 @@ gh:init() {
   git:init "$source" "$target"
 }
 
-ui::doing() {
-  printf '==> %s\n' "$1"
-}
-
-config::apt:sources() {
-  ui::doing "Instal ubuntu apt sources"
-  sudo tee /etc/apt/sources.list >/dev/null <<-'EOS'
-    deb http://mirror.eu.kamatera.com/ubuntu focal main restricted
-    deb http://mirror.eu.kamatera.com/ubuntu focal-updates main restricted
-    deb http://mirror.eu.kamatera.com/ubuntu focal universe
-    deb http://mirror.eu.kamatera.com/ubuntu focal-updates universe
-    deb http://mirror.eu.kamatera.com/ubuntu focal multiverse
-    deb http://mirror.eu.kamatera.com/ubuntu focal-updates multiverse
-    deb http://mirror.eu.kamatera.com/ubuntu focal-backports main restricted universe multiverse
-    deb http://security.ubuntu.com/ubuntu focal-security main restricted
-    deb http://security.ubuntu.com/ubuntu focal-security universe
-    deb http://security.ubuntu.com/ubuntu focal-security multiverse
-EOS
-}
-
-config::pacman:mirrorlist() {
-  ui::doing "Instal arch pacman mirrorlist"
-  sudo tee /etc/pacman.d/mirrorlist >/dev/null <<-'EOS'
-    Server = https://archlinux.koyanet.lv/archlinux/$repo/os/$arch
-    Server = http://mirror.puzzle.ch/archlinux/$repo/os/$arch
-    Server = http://mirror.datacenter.by/pub/archlinux/$repo/os/$arch
-    Server = https://archlinux.uk.mirror.allworldit.com/archlinux/$repo/os/$arch
-    Server = http://mirror.easylee.nl/archlinux/$repo/os/$arch
-EOS
-}
-
-pacman:install() {
-  sudo pacman -Syu --noconfirm --needed "$@"
-}
-
-apt:install() {
-  sudo env DEBIAN_FRONTEND=noninteractive apt-get update -y
-  sudo env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-  sudo env DEBIAN_FRONTEND=noninteractive apt-get install "$@" -y
-}
-apt:install.delayed() {
-  sudo env DEBIAN_FRONTEND=noninteractive apt-get install "$@" -y
-}
-
-aur:install() {
-  local name="$1"; shift;
-
-  curl https://aur.archlinux.org/cgit/aur.git/snapshot/$name.tar.gz >$name.tar.gz
-
-  tar xvf $name.tar.gz
-  cd $name
-
-  makepkg -sic --noconfirm
-}
-
-linux.distro() {
+CDI::linux:distro() {
   node_name="$(uname --nodename)"
   case "$node_name" in
     ubuntu-*)
@@ -148,27 +179,22 @@ linux.distro() {
   esac
 }
 
-CDI_install_base_devel() {
-  case "$( linux.distro )" in
+CDI::install:base_devel() {
+  case "$( CDI::linux:distro )" in
     (Ubuntu)
+      config::apt:sources
       apt:install \
 	"${COMMON_PACKAGES[@]}" \
 	"${DEBIAN_APT_NEEDS[@]}" \
 	"${RUBY_DEPS_DEB[@]}" \
       ;;
     (Arch)
+      config::pacman:mirrorlist
       pacman:install \
 	"${COMMON_PACKAGES[@]}" \
 	"${PACMAN_AUR_NEEDS}" \
       ;;
   esac
-}
-
-CDI_install_rbenv_build() {
-  target="$(rbenv root)"/plugins
-
-  mkdir -p "$target"
-  gh:init "rbenv/ruby-build" "$target/ruby-build"
 }
 
 CDI::user_paths:add() {
@@ -184,26 +210,50 @@ CDI::user_init:load() {
   source $HOME/.user_init
 }
 
-CDI_install_rbenv() {
-  gh:init "rbenv/rbenv" "$HOME/.rbenv"
-  cd ~/.rbenv && src/configure && make -C src
+CDI::install:rbenv-build() {
+  target="$(rbenv root)"/plugins
 
-  CDI::user_paths:add "$HOME/.rbenv/bin"
-  CDI::user_init:add.eval '$(rbenv init -)'
+  mkdir -p "$target"
+  gh:init "rbenv/ruby-build" "$target/ruby-build"
+}
+CDI::install:rbenv() {
+  if $HOME/.rbenv/bin/rbenv version >/dev/null 2>/dev/null
+  then
+    true
+  else
+    gh:init "rbenv/rbenv" "$HOME/.rbenv"
+    cd ~/.rbenv && src/configure && make -C src
 
-  source "$HOME/.user_paths"
-  source "$HOME/.user_init"
+    CDI::user_paths:add "$HOME/.rbenv/bin"
+    CDI::user_init:add.eval '$(rbenv init -)'
+    CDI::user_init:load
 
-  CDI_install_rbenv_build
-  curl -fsSL "https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-doctor" | bash
+    CDI::install:rbenv-build
+    curl -fsSL "https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-doctor" | bash
+  fi
+}
+CDI::install:ruby.3.0.1() {
+  ui::doing "RB_3.0.1"
+  CDI::user_init:load
+  if rbenv versions --bare --skip-aliases | grep 3.0.1
+  then
+    true
+  else
+    rbenv install 3.0.1
+  fi
+}
+CDI::install:homebrew() {
+  if which brew >/dev/null 2>/dev/null
+  then
+    true
+  else
+    curl -fsSL "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" | bash
+    CDI::user_init:add.eval '$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)'
+  fi
 }
 
-CDI_install_homebrew() {
-  curl -fsSL "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" | bash
-}
-
-CDI_install_ccache_to_user_paths() {
-  case "$( linux.distro )" in
+CDI::install:user_paths.ccache() {
+  case "$( CDI::linux:distro )" in
     Ubuntu)
       CDI::user_paths:add "/lib/ccache"
       ;;
@@ -213,33 +263,39 @@ CDI_install_ccache_to_user_paths() {
   esac
 }
 
-mode::init() {
-  CDI_install_base_devel
-  CDI_install_rbenv
-  CDI_install_ccache_to_user_paths
+CDI::install:omf() {
+  if fish -c 'omf >/dev/null' 2>/dev/null
+  then
+    true
+  else
+    CDI::user_init:load
+    curl -sL https://get.oh-my.fish >omf::install.fish
+    fish omf::install.fish --noninteractive
+    fish -c 'omf install flash'
+  fi
 }
 
-mode::homebrew:install() {
-  CDI::user_init:load
-
-  curl -fsSL "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" >homebrew:install.sh
-  bash homebrew:install.sh
-
-  CDI::user_init:add.eval '$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)'
+CDI::install:cargo() {
+  if $HOME/.cargo/bin/cargo --version >/dev/null 2>/dev/null
+  then
+    true
+  else
+    ui::doing "RUST"
+    brew: install rustup-init
+    rustup-init -y
+    CDI::user_init:add.eval 'source $HOME/.cargo/env'
+  fi
 }
 
-mode::rbenv:install-3.0.1() {
-  CDI::user_init:load
-  rbenv install 3.0.1
+CDI::install:ct() {
+  brew:install2 --HEAD \
+    Good-Vibez/tap/xs \
+    Good-Vibez/tap/xc \
+  ;
 }
 
-brew:() {
-  CDI::user_init:load
-  brew "$@"
-}
-
-xfce4::install() {
-  case "$( linux.distro )" in
+UDI::install:xfce4() {
+  case "$( CDI::linux:distro )" in
     Ubuntu)
       apt:install.delayed xfce4
       ;;
@@ -249,112 +305,35 @@ xfce4::install() {
   esac
 }
 
-fish::config() {
-  tee ~/.config/fish/conf.d/osx_gnu.fish >/dev/null <<-'EOS'
-  if test (uname -s) = "Darwin"
-    set -gx PATH /usr/local/opt/coreutils/libexec/gnubin $PATH
-    set -gx PATH /usr/local/opt/gnu-sed/libexec/gnubin $PATH
-  end
-EOS
-  tee ~/.config/fish/conf.d/vi.fish >/dev/null <<-'EOS'
-  set -U fish_key_bindings fish_vi_key_bindings
-EOS
-}
-
-omf::install() {
+brew:() {
   CDI::user_init:load
-  curl -sL https://get.oh-my.fish >omf::install.fish
-  fish omf::install.fish --noninteractive
-  omf i flash
+  brew "$@"
+}
+rbenv:() {
+  CDI::user_init:load
+  rbenv "$@"
 }
 
-  echo ["${ENABLE_INIT+x}"] INIT
-  echo ["${ENABLE_RBENV+x}"] RBENV
-  echo ["${ENABLE_HOMEBREW+x}"] HMBRE
-  echo ["${ENABLE_HOMEBRW_PACKAGES+x}"] HMBPK
-  echo ["${ENABLE_RUST+x}"] RUST
-  echo ["${ENABLE_BSHRC+x}"] BSHRC
-  echo ["${ENABLE_XFCE+x}"] XFCE
-  echo ["${ENABLE_XS+x}"] XS_XC
-  echo ["${ENABLE_OMF+x}"] OMF
+brew:install() {
+  brew:install2 "" "${@}"
+}
+brew:install2() {
+  brargs="$1"; shift;
 
-if test \
-  "${ENABLE_INIT+x}" = "x" -o \
-  0 = 1
+  brew: info --json --formulae "${@}" \
+  | jq \
+    --raw-output \
+    --join-output \
+    --compact-output '.
+      | map(select((.installed | length) == 0))
+      | map(.name)
+      | join("\u0000")
+    ' \
+  | xargs -0 -I::: brew install $brargs ::: # NOTE: DO NOT QUOTE $brargs
+}
+
+if test "${VMINSTALLLIB-x}" = "x"
 then
-  ui::doing "INIT"
-  mode::init
+  ui::doing "MAIN"
+  main
 fi
-
-if test \
-  "${ENABLE_RBENV+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "RBENV"
-  mode::rbenv:install-3.0.1
-fi
-
-if test \
-  "${ENABLE_HOMEBREW+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "HMBRW"
-  mode::homebrew:install
-fi
-
-if test \
-  "${ENABLE_HOMEBREW_PACKAGES+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "HMBRW PKGS"
-  brew: install "${BREW_PACKAGES[@]}"
-  fish::config
-fi
-
-if test \
-  "${ENABLE_RUST+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "RUST"
-  brew: install rustup-init
-  rustup-init -y
-  CDI::user_init:add.eval 'source $HOME/.cargo/env'
-fi
-
-if test \
-  "${ENABLE_BSHRC+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "BSHRC"
-  echo 'source $HOME/.user_paths' >> $HOME/.bashrc
-  echo 'source $HOME/.user_init' >> $HOME/.bashrc
-fi
-
-if test \
-  "${ENABLE_XFCE+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "XFCE (4)"
-  xfce4::install
-fi
-
-if test \
-  "${ENABLE_XS+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "XS - XC"
-  brew: install --HEAD \
-    Good-Vibez/tap/xs \
-    Good-Vibez/tap/xc \
-  ;
-fi
-
-if test \
-  "${ENABLE_OMF+x}" = "x" -o \
-  0 = 1
-then
-  ui::doing "OMF"
-  omf::install
-fi
-
-echo "*] Just chillin'"
