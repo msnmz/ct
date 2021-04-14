@@ -43,15 +43,19 @@ BREW_PACKAGES=(
   grep
   gnu-sed
   # libressl
-  fish
-  tmux
-  htop
-  lsd
+
+  # Tools
   jq
   direnv
   pv
   nvim
   git
+
+  # Dev/Workspace/Aesthetics
+  fish
+  tmux
+  htop
+  lsd
 )
 
 git:init() {
@@ -74,8 +78,12 @@ gh:init() {
   git:init "$source" "$target"
 }
 
+ui::doing() {
+  printf '==> %s\n' "$1"
+}
+
 config::apt:sources() {
-  echo "* Installing ubuntu apt sources"
+  ui::doing "Instal ubuntu apt sources"
   sudo tee /etc/apt/sources.list >/dev/null <<-'EOS'
     deb http://mirror.eu.kamatera.com/ubuntu focal main restricted
     deb http://mirror.eu.kamatera.com/ubuntu focal-updates main restricted
@@ -91,7 +99,7 @@ EOS
 }
 
 config::pacman:mirrorlist() {
-  echo "* Installing arch pacman mirrorlist"
+  ui::doing "Instal arch pacman mirrorlist"
   sudo tee /etc/pacman.d/mirrorlist >/dev/null <<-'EOS'
     Server = https://archlinux.koyanet.lv/archlinux/$repo/os/$arch
     Server = http://mirror.puzzle.ch/archlinux/$repo/os/$arch
@@ -241,20 +249,40 @@ xfce4::install() {
   esac
 }
 
-  echo INIT "${ENABLE_INIT+x}"
-  echo RBENV "${ENABLE_RBENV+x}"
-  echo HMBRE "${ENABLE_HOMEBREW+x}"
-  echo HMBPK "${ENABLE_HOMEBRW_PACKAGES+x}"
-  echo RUST "${ENABLE_RUST+x}"
-  echo BSHRC "${ENABLE_BSHRC+x}"
-  echo XFCE "${ENABLE_XFCE+x}"
-  echo XS XC "${ENABLE_XS+x}"
+fish::config() {
+  tee ~/.config/fish/conf.d/osx_gnu.fish >/dev/null <<-'EOS'
+  if test (uname -s) = "Darwin"
+    set -gx PATH /usr/local/opt/coreutils/libexec/gnubin $PATH
+    set -gx PATH /usr/local/opt/gnu-sed/libexec/gnubin $PATH
+  end
+EOS
+  tee ~/.config/fish/conf.d/vi.fish >/dev/null <<-'EOS'
+  set -U fish_key_bindings fish_vi_key_bindings
+EOS
+}
+
+omf::install() {
+  CDI::user_init:load
+  curl -sL https://get.oh-my.fish >omf::install.fish
+  fish omf::install.fish --noninteractive
+  omf i flash
+}
+
+  echo ["${ENABLE_INIT+x}"] INIT
+  echo ["${ENABLE_RBENV+x}"] RBENV
+  echo ["${ENABLE_HOMEBREW+x}"] HMBRE
+  echo ["${ENABLE_HOMEBRW_PACKAGES+x}"] HMBPK
+  echo ["${ENABLE_RUST+x}"] RUST
+  echo ["${ENABLE_BSHRC+x}"] BSHRC
+  echo ["${ENABLE_XFCE+x}"] XFCE
+  echo ["${ENABLE_XS+x}"] XS_XC
+  echo ["${ENABLE_OMF+x}"] OMF
 
 if test \
   "${ENABLE_INIT+x}" = "x" -o \
   0 = 1
 then
-  echo INIT
+  ui::doing "INIT"
   mode::init
 fi
 
@@ -262,7 +290,7 @@ if test \
   "${ENABLE_RBENV+x}" = "x" -o \
   0 = 1
 then
-  echo RBENV
+  ui::doing "RBENV"
   mode::rbenv:install-3.0.1
 fi
 
@@ -270,7 +298,7 @@ if test \
   "${ENABLE_HOMEBREW+x}" = "x" -o \
   0 = 1
 then
-  echo HMBRW
+  ui::doing "HMBRW"
   mode::homebrew:install
 fi
 
@@ -278,15 +306,16 @@ if test \
   "${ENABLE_HOMEBREW_PACKAGES+x}" = "x" -o \
   0 = 1
 then
-  echo HMBRW PKGS
+  ui::doing "HMBRW PKGS"
   brew: install "${BREW_PACKAGES[@]}"
+  fish::config
 fi
 
 if test \
   "${ENABLE_RUST+x}" = "x" -o \
   0 = 1
 then
-  echo RUST
+  ui::doing "RUST"
   brew: install rustup-init
   rustup-init -y
   CDI::user_init:add.eval 'source $HOME/.cargo/env'
@@ -296,7 +325,7 @@ if test \
   "${ENABLE_BSHRC+x}" = "x" -o \
   0 = 1
 then
-  echo BSHRC
+  ui::doing "BSHRC"
   echo 'source $HOME/.user_paths' >> $HOME/.bashrc
   echo 'source $HOME/.user_init' >> $HOME/.bashrc
 fi
@@ -305,7 +334,7 @@ if test \
   "${ENABLE_XFCE+x}" = "x" -o \
   0 = 1
 then
-  echo "XFCE (4)"
+  ui::doing "XFCE (4)"
   xfce4::install
 fi
 
@@ -313,11 +342,19 @@ if test \
   "${ENABLE_XS+x}" = "x" -o \
   0 = 1
 then
-  echo "XS - XC"
+  ui::doing "XS - XC"
   brew: install --HEAD \
     Good-Vibez/tap/xs \
     Good-Vibez/tap/xc \
   ;
+fi
+
+if test \
+  "${ENABLE_OMF+x}" = "x" -o \
+  0 = 1
+then
+  ui::doing "OMF"
+  omf::install
 fi
 
 echo "*] Just chillin'"

@@ -202,7 +202,7 @@ Script([
     //AliasStmt ("Validate packer configuration"),
     //AliasStmt ("Inspect packer configuration"),
     //AliasStmt ("Print the generated packer configuration"),
-    //AliasStmt ("Build otomatik packer builds"),
+    AliasStmt ("Build otomatik packer builds"),
 
     //AliasStmt ("Update cargo-build-tag"),
 
@@ -221,6 +221,6 @@ Script([
 
     //AliasStmt ("Install the local binaries (.local/bin.edge)"),
 
-    AliasStmt ("List all used executables"),
+    //AliasStmt ("List all used executables"),
     AliasStmt ("std::join 1 2 3"),
 ])//Script

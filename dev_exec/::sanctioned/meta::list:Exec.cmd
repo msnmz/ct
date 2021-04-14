@@ -52,13 +52,22 @@ Script([//-0
                                 args: [
                                     "--null-input",
                                     "--raw-output",
+                                    "-C",
                                     "--argjson", "script", (var: "json"),
-                                    r####"$script
+                                    r####" $script
                                     | .[0] # Script()
-                                    | .[] as { $cmd, $args } ?// $__
-                                    | if $cmd != null
-                                        then $cmd
-                                        else empty end
+                                    | .[]
+                                    | def walk:
+                                        . as { $cmd } ?// [$lhs, $rhs] ?// $what_is_this
+                                        |
+                                            if $what_is_this
+                                            then @json "\($what_is_this)" | error
+                                            else if $rhs != null and ($rhs | type) != "string" then
+                                                $rhs | walk
+                                            else $cmd end end
+                                    ;
+                                    walk
+                                    | select(. != null)
                                     "####
                                 ]
                             )
