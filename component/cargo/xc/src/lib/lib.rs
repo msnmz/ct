@@ -15,7 +15,8 @@ const SSH_CONFIG: &str = "h";
 const VAGRANT: &str = "v";
 const STRING: &str = "s";
 const BYTES: &str = "b";
-const NL_TRIMMED: &str = "0";
+const NL_TRIMMED: &str = "-";
+const NULL_SEPARATED: &str = "0";
 
 pub fn app<I: io::Read, O: io::Write>(
     args: Vec<String>,
@@ -55,13 +56,23 @@ pub fn app<I: io::Read, O: io::Write>(
             }
             NL_TRIMMED => {
                 write!(
-                    out,
+                    stdout,
                     "{}",
-                    buffer
-                        .strip_suffix("\r\n")
-                        .or(buffer.strip_suffix("\n"))
-                        .unwrap_or(&buffer)
+                    buffer.trim_end_matches('\n').trim_end_matches('\r')
                 )?;
+                Ok(())
+            }
+            NULL_SEPARATED => {
+                let lines: Vec<_> =
+                    buffer.lines().filter(|line| !line.is_empty()).collect();
+                let last_index = lines.len() - 1;
+                for (i, line) in lines.into_iter().enumerate() {
+                    if i != last_index {
+                        write!(stdout, "{}{}", line, b'\0')?
+                    } else {
+                        write!(stdout, "{}", line)?
+                    }
+                }
                 Ok(())
             }
             other => {
