@@ -15,6 +15,7 @@ const SSH_CONFIG: &str = "h";
 const VAGRANT: &str = "v";
 const STRING: &str = "s";
 const BYTES: &str = "b";
+const NL_TRIMMED: &str = "0";
 
 pub fn app<I: io::Read, O: io::Write>(
     args: Vec<String>,
@@ -50,6 +51,17 @@ pub fn app<I: io::Read, O: io::Write>(
                 }
                 write!(stdout, "]")?;
 
+                Ok(())
+            }
+            NL_TRIMMED => {
+                write!(
+                    out,
+                    "{}",
+                    buffer
+                        .strip_suffix("\r\n")
+                        .or(buffer.strip_suffix("\n"))
+                        .unwrap_or(&buffer)
+                )?;
                 Ok(())
             }
             other => {
