@@ -54,10 +54,9 @@ pub fn app<I: io::Read, O: io::Write>(
                 Ok(())
             }
             NULL_SEPARATED => {
-                let mut separator = "";
-                buffer.lines().for_each(move |line| {
-                    let _ = write!(out, "{}{}", separator, line);
-                    separator = "\x00";
+                buffer.lines().fold("", |separator, line| {
+                    let _ = write!(stdout, "{}{}", separator, line);
+                    "\x00"
                 });
                 Ok(())
             }
