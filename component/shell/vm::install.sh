@@ -103,19 +103,22 @@ config::pacman:mirrorlist() {
 EOS
 }
 config::fish() {
-  tee ~/.config/fish/conf.d/osx_gnu.fish >/dev/null <<-'EOS'
+  mkdir -pv $HOME/.config/fish/conf.d
+  tee $HOME/.config/fish/conf.d/osx_gnu.fish >/dev/null <<-'EOS'
   if test (uname -s) = "Darwin"
     set -gx PATH /usr/local/opt/coreutils/libexec/gnubin $PATH
     set -gx PATH /usr/local/opt/gnu-sed/libexec/gnubin $PATH
   end
 EOS
-  tee ~/.config/fish/conf.d/vi.fish >/dev/null <<-'EOS'
+  tee $HOME/.config/fish/conf.d/vi.fish >/dev/null <<-'EOS'
   set -U fish_key_bindings fish_vi_key_bindings
 EOS
 }
 config::bash() {
-  echo 'source $HOME/.user_paths' >> $HOME/.bashrc
-  echo 'source $HOME/.user_init' >> $HOME/.bashrc
+  tee -a $HOME/.bashrc >/dev/null <<-'EOS'
+  source $HOME/.user_paths
+  source $HOME/.user_init
+EOS
 }
 
 pacman:install() {
@@ -288,6 +291,7 @@ CDI::install:cargo() {
 }
 
 CDI::install:ct() {
+  brew: tap Good-Vibez/tap
   brew:install2 --HEAD \
     Good-Vibez/tap/xs \
     Good-Vibez/tap/xc \
@@ -320,16 +324,21 @@ brew:install() {
 brew:install2() {
   brargs="$1"; shift;
 
-  brew: info --json --formulae "${@}" \
-  | jq \
-    --raw-output \
-    --join-output \
-    --compact-output '.
-      | map(select((.installed | length) == 0))
-      | map(.name)
-      | join("\u0000")
-    ' \
-  | xargs -0 -I::: brew install $brargs ::: # NOTE: DO NOT QUOTE $brargs
+  if jq --version >/dev/null 2>/dev/null
+  then
+    brew: info --json --formulae "${@}" \
+    | jq \
+      --raw-output \
+      --join-output \
+      --compact-output '.
+	| map(select((.installed | length) == 0))
+	| map(.name)
+	| join("\u0000")
+      ' \
+    | xargs -0 -I::: brew install $brargs ::: # NOTE: DO NOT QUOTE $brargs
+  else
+    brew install "${@}"
+  fi
 }
 
 if test "${VMINSTALLLIB-x}" = "x"
