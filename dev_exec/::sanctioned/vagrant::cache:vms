@@ -22,6 +22,12 @@ Script([
         )
     ),
 
+    Let ("for_each_vm.xs",
+        Exec (output: String,
+            cmd: "",
+        )
+    ),
+
     Let ("script-1.xs",
         Exec (output: String,
             cmd: "xs",
@@ -126,12 +132,12 @@ Script([
         )
     ),
 
-    Exec (output: Display,
-        cmd: "xs",
-        args: [
-            "-ah", "ssh-config", (var: "ssh-config"),
-            "-c",
-            (var: "script-1.xs")
-        ],
-    )
+    //Exec (output: Display,
+    //    cmd: "xs",
+    //    args: [
+    //        "-ah", "ssh-config", (var: "ssh-config"),
+    //        "-c",
+    //        (var: "script-1.xs")
+    //    ],
+    //)
 ])//Script

@@ -13,6 +13,7 @@ main() {
   brew:install "${BREW_PACKAGES[@]}"
   config::fish
   config::bash
+  config::tmux
   ui::doing "OMF"
   CDI::install:omf
   ui::doing "CARGO"
@@ -120,9 +121,20 @@ config::bash() {
   source $HOME/.user_init
 EOS
 }
+config::tmux() {
+  tee $HOME/.tmux.conf >/dev/null <<-'EOS'
+  set -g escape-time 0
+  set -g mode-keys vi
+  set -g status-style bg=colour24
+  set -g status-left-style bg=colour162
+  set -g status-right-style bg=colour17,fg=colour92
+  set -g default-shell /home/linuxbrew/.linuxbrew/bin/fish
+  set -g default-terminal screen-256color
+EOS
+}
 
 pacman:install() {
-  sudo pacman -Syu --noconfirm --needed "$@"
+  sudo pacman -Syu --noconfirm --needed --quiet "$@"
 }
 
 apt:install() {

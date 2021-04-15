@@ -10,10 +10,8 @@ Script([
     ),
 
     Alias ("Build cargo workspace",
-
         List([
             Let ("cargo-run.xs.sh",
-
                 // TODO: create a cargo-max-lines wrapper
 
                 //HACK: this is a pure workaround to capture STDERR.
@@ -192,7 +190,6 @@ Script([
 
     //AliasStmt ("Build cargo workspace"),
 
-    //AliasStmt ("Cache VMs"),
     //AliasStmt ("Regenerate Vagrantfile"),
     //AliasStmt ("Print the generated Vagrantfile"),
 
@@ -202,7 +199,8 @@ Script([
     //AliasStmt ("Validate packer configuration"),
     //AliasStmt ("Inspect packer configuration"),
     //AliasStmt ("Print the generated packer configuration"),
-    AliasStmt ("Build otomatik packer builds"),
+    //AliasStmt ("Build otomatik packer builds"),
+    //AliasStmt ("Cache VMs"),
 
     //AliasStmt ("Update cargo-build-tag"),
 
